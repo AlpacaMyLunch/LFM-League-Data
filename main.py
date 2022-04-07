@@ -176,6 +176,11 @@ def main():
             Does this driver share any sessions with other tracked drivers?
             """
 
+            if not self.selected_driver:
+                print('Please select a driver')
+                return
+
+
             shared = {}
             for session in self.selected_driver.sessions:
                 session_id = session.session_id

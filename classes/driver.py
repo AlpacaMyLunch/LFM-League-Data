@@ -20,6 +20,9 @@ class Driver:
     save_file: str
     json_file: str
     notes: str
+    wins: int
+    races: int
+    podiums: int
 
     def __init__(self, id: int):
         
@@ -28,6 +31,8 @@ class Driver:
         self.id = int(id)
         self.sessions = []
         self.notes = ''
+        self.wins = 0
+        self.podiums = 0
 
 
         
@@ -51,6 +56,7 @@ class Driver:
             pickle_save(self.save_file, self)
 
 
+        self.races = len(self.sessions)
 
     def update_notes(self, notes: str):
         self.notes = notes
@@ -62,13 +68,16 @@ class Driver:
         Force a refresh of all sessions
         """
         self.sessions = []
+        self.wins = 0
+        self.podiums = 0
         self.gather_sessions()
 
     def print(self):
         print()
         print(f'{self.name} (id: {self.id})')
         
-        print(f'{len(self.sessions)} sessions')
+        print(f'{self.races} sessions')
+        print(f'{self.wins} wins, {self.podiums} podiums')
 
         print(f'Notes: {self.notes}')
 
@@ -79,7 +88,8 @@ class Driver:
         Same as print, but returns a string instead of output to console
         """
         output = f'{self.name} (id: {self.id})\n'
-        output = f'{output}{len(self.sessions)} sessions\n'
+        output = f'{output}{self.races} sessions\n'
+        output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}Notes: {textwrap.fill(self.notes, 50)}\n'
 
         return output
@@ -96,6 +106,8 @@ class Driver:
         request = http_request(url)
         data = request.json()
 
+        
+      
         for race in data:
             if self.name == '':
                 driver_data = json.loads(race['driver_data'])
@@ -113,8 +125,14 @@ class Driver:
                 new_race.set_finish_position(finish)
                 self.sessions.append(new_race)
 
+                if finish == 1:
+                    self.wins += 1
+                if finish <=3:
+                    self.podiums += 1
+
 
         self.sessions = sort_races(self.sessions)
+        self.races = len(self.sessions)
         pickle_save(self.save_file, self)
 
 
