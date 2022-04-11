@@ -1,5 +1,3 @@
-from fileinput import filename
-from lib2to3.pgen2 import driver
 import requests
 import json
 from classes.printing import print_side_by_side
@@ -549,6 +547,21 @@ def load_cache(session_id):
 
 def save_cache(session_id, data):
     file_name = f'{SESSION_CACHE_DIR}{session_id}.json'
+
+    # trim the data
+    remove_keys = [
+        'broadcaster',
+        'entrylist',
+        'participants',
+        'splits',
+        'race_results',
+        'quali_results',
+        'quali_results_splits'
+    ]
+
+    for key in remove_keys:
+        data.pop(key, None)
+
     json_to_file(file_name, data)
 
 

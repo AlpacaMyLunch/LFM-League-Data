@@ -108,7 +108,7 @@ def main():
                 # driver.print()
                 driver_outputs.append(driver.text())
 
-            print_side_by_side(driver_outputs, 2, 100)
+            print_side_by_side(driver_outputs, 3, 95)
 
         def do_find(self, identifier):
             for driver in drivers:
