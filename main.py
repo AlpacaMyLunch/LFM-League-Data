@@ -113,7 +113,7 @@ def main():
                 # driver.print()
                 driver_outputs.append(driver.text())
 
-            print_side_by_side(driver_outputs, 3, 95)
+            print_side_by_side(driver_outputs, 4, 75)
 
         def do_find(self, identifier):
             """
@@ -243,7 +243,7 @@ def main():
                         session['my position'] = colored(f"P{session['my position']}", COLOR_GREEN)
                         session['their position'] = f'P{session["their position"]}'
                     else:
-                        session['their position'] = colored(f"P{session['my position']}", COLOR_GREEN)
+                        session['their position'] = colored(f"P{session['their position']}", COLOR_GREEN)
                         session['my position'] = f'P{session["my position"]}'
                     msg = f'{msg}  {session["date"][0:10]} at {session["track"]} ({session["session"]}) {self.selected_driver.name} {session["my position"]} - {session["their position"]} {driver}\n'
                 msg = f'{msg} \n'
