@@ -176,15 +176,18 @@ def main():
         def do_shared(self, args):
             """
             Does this driver share any sessions with other tracked drivers?
+            Optional: Filter by opponent name and/or track name
             """
 
             if not self.selected_driver:
                 print('Please select a driver')
                 return
 
-
+            search_terms = args.strip()
+            search_terms = search_terms.split(' ')
             shared = {}
             for session in self.selected_driver.sessions:
+                include = True
                 session_id = session.session_id
                 split = session.split
                 for driver in drivers:
@@ -200,9 +203,13 @@ def main():
                                     'their position': check_session.finish_position
                                 }
                                 if check_session.split == split:
-                                    if driver.name not in shared:
-                                        shared[driver.name] = []
-                                    shared[driver.name].append(data)
+                                    for term in search_terms:
+                                        if term.lower() not in data['track'].lower() and term.lower() not in driver.name.lower():
+                                            include = False
+                                    if include == True:
+                                        if driver.name not in shared:
+                                            shared[driver.name] = []
+                                        shared[driver.name].append(data)
 
             
             for driver in shared:
