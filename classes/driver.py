@@ -7,6 +7,7 @@ from datetime import datetime
 from os import path
 
 from classes.race import Race
+from classes.printing import print_side_by_side, clear_terminal, replace_print
 
 PICKLE_DIR = './pickles/'
 JSON_DIR = './json/'
@@ -23,6 +24,8 @@ class Driver:
     wins: int
     races: int
     podiums: int
+    incident_points: int
+    incident_points_per_race: float
 
     def __init__(self, id: int):
         
@@ -33,6 +36,8 @@ class Driver:
         self.notes = ''
         self.wins = 0
         self.podiums = 0
+        self.incident_points = 0
+        self.incident_points_per_race = 0.0
 
 
         
@@ -47,10 +52,15 @@ class Driver:
             self.id = exists.id
             self.sessions = exists.sessions
             self.json_file = f'{JSON_DIR}{self.name}.json'
+            self.wins = exists.wins
+            self.podiums = exists.podiums
+            self.notes = exists.notes
             try:
-                self.notes = exists.notes
+                self.incident_points = exists.incident_points
+                self.incident_points_per_race = exists.incident_points_per_race
             except:
-                self.notes = ''
+                self.incident_points = 0
+                self.incident_points_per_race = 0.0
 
         else:
             pickle_save(self.save_file, self)
@@ -70,6 +80,8 @@ class Driver:
         self.sessions = []
         self.wins = 0
         self.podiums = 0
+        self.incident_points = 0
+        self.incident_points_per_race = 0.0
         self.gather_sessions()
 
     def print(self):
@@ -90,6 +102,7 @@ class Driver:
         output = f'{self.name} (id: {self.id})\n'
         output = f'{output}{self.races} sessions\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
+        output = f'{output}{self.incident_points_per_race} incidents per race\n'
         output = f'{output}Notes: {textwrap.fill(self.notes, 50)}\n'
 
         return output
@@ -125,6 +138,11 @@ class Driver:
                 new_race.set_finish_position(finish)
                 self.sessions.append(new_race)
 
+
+
+                self.incident_points += new_race.incidents
+                
+
                 if finish == 1:
                     self.wins += 1
                 if finish <=3:
@@ -133,7 +151,9 @@ class Driver:
 
         self.sessions = sort_races(self.sessions)
         self.races = len(self.sessions)
+        self.incident_points_per_race = round(self.incident_points / self.races, 2)
         pickle_save(self.save_file, self)
+        replace_print('')
 
 
 
@@ -148,7 +168,8 @@ class Driver:
                 'id': self.id,
                 'name': self.name,
                 'sessions': [],
-                'notes': self.notes
+                'notes': self.notes,
+                'incidents per race': self.incident_points_per_race
             }
         
         for session in self.sessions:
@@ -180,7 +201,30 @@ class Driver:
 
         return None
 
+    def return_sessions_by_term(self, term: str):
+        """
+        Return a list of sessions based on a term
+        such as track or car name.
+        """
 
+        terms = term.split(' ')
+        output = []
+        for session in self.sessions:
+            include = True
+            if session.dnf == False and len(session.laps) > 0:
+                for term in terms:
+                    if (term.lower() not in session.track.lower()) and (term.lower() not in session.car_name.lower()):
+                        include = False
+            else:
+                include = False
+
+            if include == True:
+                output.append(session)
+
+
+
+        
+        return output
 
 
 

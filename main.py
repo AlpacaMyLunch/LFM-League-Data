@@ -12,6 +12,7 @@ from termcolor import colored
 
 from classes.driver import Driver
 from classes.printing import print_side_by_side
+from classes.race import compare_times
 
 PICKLE_DIR = './pickles/'
 
@@ -23,7 +24,8 @@ COLOR_SUCCESS = 'green'
 COLOR_PROMPT = 'cyan'
 COLOR_YELLOW = 'yellow'
 COLOR_ORANGE = 'redorange'
-PROMPT_ARROW = colored(' ->> ', COLOR_PROMPT)
+COLOR_PURPLE = 'magenta'
+
 colorama.init()
 # / PRETTY
 
@@ -286,6 +288,59 @@ def main():
                         race = self.selected_driver.return_session(session_id)
                         if race:
                             race.compare(opponent_id)
+
+        def do_races(self, args):
+            if not self.selected_driver:
+                print('Please select a driver')
+                return
+
+            args = args.strip()
+
+            races = self.selected_driver.return_sessions_by_term(args)
+            printing = []
+
+            bests = {
+                'lap': '10:59.999',
+                'average lap': '10:59.999',
+                'finish position': 99
+            }
+            for race in races:
+                best_lap_comparison = compare_times(bests['lap'], race.best_lap)
+                if best_lap_comparison < 0:
+                    bests['lap'] = race.best_lap
+
+
+                avg_lap_comparison = compare_times(bests['average lap'], race.analysis["average"].time)
+                if avg_lap_comparison < 0:
+                    bests['average lap'] = race.analysis["average"].time
+
+                if race.finish_position < bests['finish position']:
+                    bests['finish position'] = race.finish_position
+
+
+            for race in races:
+
+                p_string = f'P{race.finish_position}'
+                lap_string = f'{race.best_lap}'
+                avg_lap_string = f'{race.analysis["average"].time}'
+
+                if race.finish_position == bests['finish position']:
+                    p_string = f'{colored(p_string, COLOR_PURPLE)}'
+                if race.best_lap == bests['lap']:
+                    lap_string = f'{colored(lap_string, COLOR_PURPLE)}'
+                if race.analysis["average"].time == bests['average lap']:
+                    avg_lap_string = f'{colored(avg_lap_string, COLOR_PURPLE)}'
+
+
+
+                printing.append(
+                    f'{p_string} in session {race.session_id} on {race.date}\n{race.track} - {race.car_year} {race.car_name}\nBest Lap: {lap_string}  |  Average Lap: {avg_lap_string}\n'
+                )
+
+
+
+
+            print_side_by_side(printing, 3, 90)
 
 
 

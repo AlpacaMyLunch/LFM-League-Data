@@ -1,7 +1,7 @@
 import colorama
-
+import re
+import sys
 from termcolor import colored as col
-
 
 colorama.init()
 
@@ -18,10 +18,24 @@ COLOR_GREY = 'grey'
 # / PRETTY
 
 
+
+
+def len_no_ansi(string):
+    return len(re.sub(
+        r'[\u001B\u009B][\[\]()#;?]*((([a-zA-Z\d]*(;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|((\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))', '', string))
+
 def colored(msg, color, attributes=[]):
-    return col(msg, color, attrs=attributes)
+    output = col(msg, color, attrs=attributes)
+    with open('colortest.txt', 'w') as f:
+        f.write(output)
+    return output
 
+def clear_terminal():
+    print ('\033c')
 
+def replace_print(msg: str):
+    sys.stdout.write(f'\r{msg}')
+    sys.stdout.flush()
 
 def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3):
 
@@ -45,7 +59,7 @@ def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_marg
                     new_entry = msg[line_number]
                 else:
                     new_entry = ''
-                temp_len = len(new_entry)
+                temp_len = len_no_ansi(new_entry)
                 current_line = f'{current_line}{new_entry}{" " * (line_len - temp_len)}'
             print(current_line)
 

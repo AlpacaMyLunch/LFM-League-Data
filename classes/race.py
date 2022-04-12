@@ -1,6 +1,6 @@
 import requests
 import json
-from classes.printing import print_side_by_side
+from classes.printing import print_side_by_side, replace_print
 
 from classes.sector import Sector
 from classes.lap import Lap
@@ -280,7 +280,7 @@ def extract_laps(data: dict, driver_id: int):
     total_time = None
     dnf = None
     gap = None
-    incidents = None
+    incidents = 0
     name = None
 
 
@@ -458,8 +458,8 @@ def pretty_time(time_value, best_value, valid_lap=True):
        return COLOR_PURPLE
 
 def gather_data(session_id: int):
-    print(f'gathering session {session_id}')
-
+    # print(f'gathering session {session_id}', end='\r')
+    replace_print(f'gathering session {session_id}')
     cache = load_cache(session_id)
     if cache:
         return cache
