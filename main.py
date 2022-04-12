@@ -226,19 +226,24 @@ def main():
                                         shared[driver.name].append(data)
 
 
+            temp = {}
+            # shared in a dict containing arrays.  want to sort by aray len
+            sorted_drivers = sorted( shared, key = lambda x: (len( shared[ x ] ), x), reverse = True )
+            for driver in sorted_drivers:
+                temp[driver] = shared[driver]
+
+            shared = temp
+
+
+            output = []
             for driver in shared:
-                print(colored(driver, COLOR_SUCCESS))
+                msg = f'{colored(driver, COLOR_SUCCESS)}\n'
                 for session in shared[driver]:
-                    print(' {} at {} ({})  {} finished {} and {} finished {}'.format(
-                        session['date'],
-                        session['track'],
-                        session['session'],
-                        self.selected_driver.name,
-                        session['my position'],
-                        driver,
-                        session['their position']
-                    ))
-                print('')
+                    msg = f'{msg}  {session["date"][0:10]} at {session["track"]} ({session["session"]}) {self.selected_driver.name} finished P{session["my position"]}, {driver} finished P{session["their position"]}\n'
+                msg = f'{msg} \n'
+                output.append(msg)
+
+            print_side_by_side(output, 2, 140, dynamic_height=True)
 
 
         def do_cars(self, args):

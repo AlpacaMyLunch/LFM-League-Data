@@ -37,7 +37,7 @@ def replace_print(msg: str):
     sys.stdout.write(f'\r{msg}')
     sys.stdout.flush()
 
-def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3):
+def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height=False):
 
     most_lines = 0
     temp = []
@@ -52,6 +52,12 @@ def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_marg
 
     for i in range(0, len(msgs), at_a_time):
         current_messages = msgs[i:i+at_a_time]
+        if dynamic_height:
+            most_lines = 0
+            for msg in current_messages:
+                if len(msg) > most_lines:
+                    most_lines = len(msg)
+
         for line_number in range(0, most_lines):
             current_line = ' '  * left_margin
             for msg in current_messages:
