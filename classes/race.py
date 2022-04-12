@@ -125,7 +125,8 @@ class Race:
             'chat': self.chat,
             'laps': [],
             'hypothetical_best': self.analysis['hypothetical'].json(),
-            'averages': self.analysis['average'].json()
+            'averages': self.analysis['average'].json(),
+            'url': self.url()
         }
 
         for lap in self.laps:
@@ -151,6 +152,7 @@ class Race:
         print(f'{self.car_year} {self.car_name} ({self.car_class})')
         print(f'{self.start_position} -> to -> {self.finish_position}')
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
+        print(self.url())
         print(f'Gap to P1: {self.gap}')
         print(f'Split {self.split}')
 

@@ -11,7 +11,7 @@ from termcolor import colored
 
 
 from classes.driver import Driver
-from classes.printing import print_side_by_side
+from classes.printing import COLOR_GREEN, print_side_by_side
 from classes.race import compare_times
 
 PICKLE_DIR = './pickles/'
@@ -239,7 +239,13 @@ def main():
             for driver in shared:
                 msg = f'{colored(driver, COLOR_SUCCESS)}\n'
                 for session in shared[driver]:
-                    msg = f'{msg}  {session["date"][0:10]} at {session["track"]} ({session["session"]}) {self.selected_driver.name} finished P{session["my position"]}, {driver} finished P{session["their position"]}\n'
+                    if session['my position'] < session['their position']:
+                        session['my position'] = colored(f"P{session['my position']}", COLOR_GREEN)
+                        session['their position'] = f'P{session["their position"]}'
+                    else:
+                        session['their position'] = colored(f"P{session['my position']}", COLOR_GREEN)
+                        session['my position'] = f'P{session["my position"]}'
+                    msg = f'{msg}  {session["date"][0:10]} at {session["track"]} ({session["session"]}) {self.selected_driver.name} {session["my position"]} - {session["their position"]} {driver}\n'
                 msg = f'{msg} \n'
                 output.append(msg)
 
