@@ -182,8 +182,7 @@ class Driver:
                         counter[opponent['id']] = 0
                         holder.append(opponent)
                     counter[opponent['id']] += 1
-                    if opponent['name'] == 'Lorenzo Galasso':
-                        print(session.url())
+
 
 
 
