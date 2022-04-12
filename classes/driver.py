@@ -156,6 +156,39 @@ class Driver:
         replace_print('')
 
 
+    def common(self, number_of_opponents: int = 6):
+        """
+        Return a list of the most common opponents.
+        """
+
+        counter = {}
+        holder = []
+        for session in self.sessions:
+            opponents = session.opponents
+            for opponent in opponents:
+                if opponent['id'] != self.id:
+                    opponent = {
+                        'id': opponent['id'],
+                        'name': opponent['name']
+                    }
+                    if opponent['id'] not in counter:
+                        counter[opponent['id']] = 0
+                        holder.append(opponent)
+                    counter[opponent['id']] += 1
+
+
+
+        counter = dict(sorted(counter.items(), key=lambda item: item[1], reverse=True))
+
+        output = []
+        for id in list(counter.keys())[0:number_of_opponents]:
+            for opponent in holder:
+                if opponent['id'] == id:
+                    opponent['races'] = counter[id]
+                    output.append(f'{counter[id]} races with {opponent["name"]} ({opponent["id"]})')
+                    break
+
+        print_side_by_side(output, 3, 60)
 
 
 

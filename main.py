@@ -289,6 +289,19 @@ def main():
                         if race:
                             race.compare(opponent_id)
 
+        def do_common(self, args):
+            if not self.selected_driver:
+                print('Please select a driver')
+                return
+
+            number_of_opponents = 6 # default
+            if args:
+                try:
+                    number_of_opponents = int(args)
+                except:
+                    pass
+            self.selected_driver.common(number_of_opponents)
+
         def do_races(self, args):
             if not self.selected_driver:
                 print('Please select a driver')
