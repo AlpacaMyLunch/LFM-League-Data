@@ -154,11 +154,12 @@ class Driver:
         self.races = len(self.sessions)
         self.incident_points_per_race = round(self.incident_points / self.races, 2)
         pickle_save(self.save_file, self)
+        replace_print('')
         print('', end='')
         
         if added_session_counter > 0:
             print(
-                f'  added {colored(added_session_counter, "blue")} sessions'
+                f'  added {colored(added_session_counter, "blue")} sessions for {self.name}{" " * 30}'
             )
 
 
@@ -181,6 +182,8 @@ class Driver:
                         counter[opponent['id']] = 0
                         holder.append(opponent)
                     counter[opponent['id']] += 1
+                    if opponent['name'] == 'Lorenzo Galasso':
+                        print(session.url())
 
 
 

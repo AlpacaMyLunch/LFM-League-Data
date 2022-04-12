@@ -50,6 +50,7 @@ class Race:
     best: dict
     opponents: list
     analysis: dict
+    event_id: int
 
     def __init__(self, session_id: int, driver_id: int):
 
@@ -71,7 +72,7 @@ class Race:
                 'rain': data['server_settings']['server_settings']['event']['data']['rain'],
                 'randomness': data['server_settings']['server_settings']['event']['data']['weatherRandomness']
             }
-
+        self.event_id = data['event_id']
         self.mandatory_pitstops = data['event']['settings']['season_event_settings']['default_server_settings']['pitstop_mandatory']
         self.chat = data['chat']
 
@@ -93,6 +94,7 @@ class Race:
         self.gap = extracted['gap']
         self.incidents = extracted['incidents']
         self.split = extracted['split']
+
 
         
         if self.split == None:
@@ -131,7 +133,12 @@ class Race:
 
         return output
 
+    def url(self):
+        """
+        Return the LFM url for this session
+        """
 
+        return f'https://lowfuelmotorsport.com/events/{self.event_id}/race/{self.session_id}'
 
     def set_start_position(self, position: int):
         self.start_position = position

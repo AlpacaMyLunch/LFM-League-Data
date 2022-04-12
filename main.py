@@ -199,12 +199,12 @@ def main():
             search_terms = search_terms.split(' ')
             shared = {}
             for session in self.selected_driver.sessions:
-                include = True
                 session_id = session.session_id
                 split = session.split
                 for driver in drivers:
                     if driver != self.selected_driver:
                         for check_session in driver.sessions:
+                            include = True
                             if check_session.session_id == session_id:
                                 
                                 data = {
@@ -214,16 +214,18 @@ def main():
                                     'my position': session.finish_position,
                                     'their position': check_session.finish_position
                                 }
+
                                 if check_session.split == split:
                                     for term in search_terms:
-                                        if term.lower() not in data['track'].lower() and term.lower() not in driver.name.lower():
+                                        if (term.lower() not in data['track'].lower()) and (term.lower() not in driver.name.lower()):
                                             include = False
+
                                     if include == True:
                                         if driver.name not in shared:
                                             shared[driver.name] = []
                                         shared[driver.name].append(data)
 
-            
+
             for driver in shared:
                 print(colored(driver, COLOR_SUCCESS))
                 for session in shared[driver]:
