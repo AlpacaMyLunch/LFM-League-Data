@@ -111,7 +111,7 @@ def main():
             driver_outputs = []
             for driver in drivers:
                 # driver.print()
-                driver_outputs.append(driver.text())
+                driver_outputs.append(driver.text(colorful=True))
 
             print_side_by_side(driver_outputs, 4, 75)
 

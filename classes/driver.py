@@ -95,11 +95,14 @@ class Driver:
 
         print()
 
-    def text(self):
+    def text(self, colorful=False):
         """
         Same as print, but returns a string instead of output to console
         """
-        output = f'{self.name} (id: {self.id})\n'
+        if colorful:
+            output = f'{colored(self.name, "blue")} (id: {self.id})\n'
+        else:
+            output = f'{self.name} (id: {self.id})\n'
         output = f'{output}{self.races} sessions\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}{self.incident_points_per_race} incidents per race\n'
