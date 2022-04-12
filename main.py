@@ -105,6 +105,9 @@ def main():
             exit()
 
         def do_list(self, args):
+            """
+            List drivers
+            """
             driver_outputs = []
             for driver in drivers:
                 # driver.print()
@@ -113,13 +116,19 @@ def main():
             print_side_by_side(driver_outputs, 3, 95)
 
         def do_find(self, identifier):
+            """
+            Find drivers based on name or ID
+            """
+            output = []
             for driver in drivers:
                 if identifier.isnumeric():
                     if driver.id == int(identifier):
-                        driver.print()
+                        output.append(driver.text())
                 else:
                     if identifier.lower() in driver.name.lower():
-                        driver.print()
+                        output.append(driver.text())
+
+            print_side_by_side(output, 3, 95)
 
 
         def do_select(self, identifier):
@@ -137,6 +146,9 @@ def main():
             self.selected_driver.print()
                     
         def do_add(self, id):
+            """
+            Add a new driver by ID
+            """
             driver = Driver(id)
             driver.gather_sessions()
             drivers.append(driver)

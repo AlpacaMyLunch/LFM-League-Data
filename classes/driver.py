@@ -7,7 +7,7 @@ from datetime import datetime
 from os import path
 
 from classes.race import Race
-from classes.printing import print_side_by_side, clear_terminal, replace_print
+from classes.printing import print_side_by_side, clear_terminal, replace_print, colored
 
 PICKLE_DIR = './pickles/'
 JSON_DIR = './json/'
@@ -119,7 +119,7 @@ class Driver:
         request = http_request(url)
         data = request.json()
 
-        
+        added_session_counter = 0
       
         for race in data:
             if self.name == '':
@@ -137,6 +137,7 @@ class Driver:
                 new_race.set_start_position(start)
                 new_race.set_finish_position(finish)
                 self.sessions.append(new_race)
+                added_session_counter += 1
 
 
 
@@ -153,7 +154,12 @@ class Driver:
         self.races = len(self.sessions)
         self.incident_points_per_race = round(self.incident_points / self.races, 2)
         pickle_save(self.save_file, self)
-        replace_print('')
+        print('', end='')
+        
+        if added_session_counter > 0:
+            print(
+                f'  added {colored(added_session_counter, "blue")} sessions'
+            )
 
 
     def common(self, number_of_opponents: int = 6):
