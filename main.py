@@ -253,7 +253,7 @@ def main():
 
         def do_chats(self, args):
             """
-            Find chat messages based on user or message
+            Find chat messages based on user, message or session id
             """
 
             output = []
@@ -273,15 +273,16 @@ def main():
                             for term in search_terms:
                                 if term.lower() not in user_name.lower():
                                     if term.lower() not in message.lower():
-                                        include = False
+                                        if term not in str(session.session_id):
+                                            include = False
                             if include == True:
                                 if chat_id not in ids:
                                     ids.append(chat_id)
                                     output.append(
-                                        f'Session {session.session_id}\n{user_name}: {message}\n'
+                                        f'Session {session.session_id}\n{colored(user_name, "blue")}: {message}\n'
                                     )
 
-            print_side_by_side(output, 3, 75)
+            print_side_by_side(output, 5, 60)
 
 
         def do_cars(self, args):

@@ -1,6 +1,7 @@
 import colorama
 import re
 import sys
+import textwrap
 from termcolor import colored as col
 
 colorama.init()
@@ -46,7 +47,25 @@ def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_marg
     most_lines = 0
     temp = []
     for msg in msgs:
-        msg = msg.split('\n')
+
+        while True:
+            msg = msg.split('\n')
+            breakout = True
+            for idx in range(0, len(msg)):
+                line = msg[idx]
+                if len(line) > line_len:
+                    line = textwrap.fill(line, line_len)
+                    msg[idx] = line
+                    breakout = False
+            
+            if breakout:
+                break
+            else:
+                msg = '\n'.join(msg)
+
+            
+
+
         temp.append(msg)
         lines = len(msg)
         if lines > most_lines:
