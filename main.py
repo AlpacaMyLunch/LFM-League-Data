@@ -251,6 +251,38 @@ def main():
 
             print_side_by_side(output, 2, 140, dynamic_height=True)
 
+        def do_chats(self, args):
+            """
+            Find chat messages based on user or message
+            """
+
+            output = []
+            ids = []
+
+            args = args.strip()
+            search_terms = args.split(' ')
+
+            for driver in drivers:
+                for session in driver.sessions:
+                    for chats in session.chat:
+                        for chat in chats:
+                            chat_id = chat['id']
+                            user_name = chat['name']
+                            message = chat['message']
+                            include = True
+                            for term in search_terms:
+                                if term.lower() not in user_name.lower():
+                                    if term.lower() not in message.lower():
+                                        include = False
+                            if include == True:
+                                if chat_id not in ids:
+                                    ids.append(chat_id)
+                                    output.append(
+                                        f'Session {session.session_id}\n{user_name}: {message}\n'
+                                    )
+
+            print_side_by_side(output, 3, 75)
+
 
         def do_cars(self, args):
             """

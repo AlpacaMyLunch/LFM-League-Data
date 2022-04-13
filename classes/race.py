@@ -49,6 +49,7 @@ class Race:
     gap: str
     best: dict
     opponents: list
+    url: str
     analysis: dict
     event_id: int
 
@@ -73,6 +74,7 @@ class Race:
                 'randomness': data['server_settings']['server_settings']['event']['data']['weatherRandomness']
             }
         self.event_id = data['event_id']
+        self.url = f'https://lowfuelmotorsport.com/events/{self.event_id}/race/{self.session_id}'
         self.mandatory_pitstops = data['event']['settings']['season_event_settings']['default_server_settings']['pitstop_mandatory']
         self.chat = data['chat']
 
@@ -126,7 +128,7 @@ class Race:
             'laps': [],
             'hypothetical_best': self.analysis['hypothetical'].json(),
             'averages': self.analysis['average'].json(),
-            'url': self.url()
+            'url': self.url
         }
 
         for lap in self.laps:
@@ -134,12 +136,7 @@ class Race:
 
         return output
 
-    def url(self):
-        """
-        Return the LFM url for this session
-        """
 
-        return f'https://lowfuelmotorsport.com/events/{self.event_id}/race/{self.session_id}'
 
     def set_start_position(self, position: int):
         self.start_position = position
@@ -152,7 +149,7 @@ class Race:
         print(f'{self.car_year} {self.car_name} ({self.car_class})')
         print(f'{self.start_position} -> to -> {self.finish_position}')
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
-        print(self.url())
+        print(self.url)
         print(f'Gap to P1: {self.gap}')
         print(f'Split {self.split}')
 

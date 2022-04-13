@@ -37,6 +37,10 @@ def replace_print(msg: str):
     sys.stdout.write(f'\r{msg}')
     sys.stdout.flush()
 
+
+
+
+
 def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height=False):
 
     most_lines = 0

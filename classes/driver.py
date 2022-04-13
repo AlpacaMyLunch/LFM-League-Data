@@ -7,7 +7,7 @@ from datetime import datetime
 from os import path
 
 from classes.race import Race
-from classes.printing import print_side_by_side, clear_terminal, replace_print, colored
+from classes.printing import print_side_by_side, replace_print, colored
 
 PICKLE_DIR = './pickles/'
 JSON_DIR = './json/'
@@ -25,6 +25,7 @@ class Driver:
     races: int
     podiums: int
     incident_points: int
+    url: str
     incident_points_per_race: float
 
     def __init__(self, id: int):
@@ -32,6 +33,7 @@ class Driver:
 
         self.name = ''
         self.id = int(id)
+        self.url = f'https://lowfuelmotorsport.com/profile/{self.id}'
         self.sessions = []
         self.notes = ''
         self.wins = 0
@@ -55,12 +57,9 @@ class Driver:
             self.wins = exists.wins
             self.podiums = exists.podiums
             self.notes = exists.notes
-            try:
-                self.incident_points = exists.incident_points
-                self.incident_points_per_race = exists.incident_points_per_race
-            except:
-                self.incident_points = 0
-                self.incident_points_per_race = 0.0
+            self.incident_points = exists.incident_points
+            self.incident_points_per_race = exists.incident_points_per_race
+            self.url = f'https://lowfuelmotorsport.com/profile/{self.id}'
 
         else:
             pickle_save(self.save_file, self)
@@ -86,8 +85,8 @@ class Driver:
 
     def print(self):
         print()
-        print(f'{self.name} (id: {self.id})')
-        
+        print(f'{self.name} ({self.id})')
+        print(self.url)
         print(f'{self.races} sessions')
         print(f'{self.wins} wins, {self.podiums} podiums')
 
@@ -100,9 +99,11 @@ class Driver:
         Same as print, but returns a string instead of output to console
         """
         if colorful:
-            output = f'{colored(self.name, "blue")} (id: {self.id})\n'
+            output = f'{colored(self.name, "blue")} ({self.id})\n'
         else:
-            output = f'{self.name} (id: {self.id})\n'
+            output = f'{self.name} ({self.id})\n'
+
+        output = f'{output}{self.url}\n' 
         output = f'{output}{self.races} sessions\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}{self.incident_points_per_race} incidents per race\n'
@@ -161,8 +162,11 @@ class Driver:
         print('', end='')
         
         if added_session_counter > 0:
+            s = ''
+            if added_session_counter > 1:
+                s = 's'
             print(
-                f'  added {colored(added_session_counter, "blue")} sessions for {self.name}{" " * 30}'
+                f'  added {colored(added_session_counter, "blue")} session{s} for {self.name}{" " * 30}'
             )
 
 
