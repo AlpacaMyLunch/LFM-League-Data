@@ -117,7 +117,7 @@ def main():
 
         def do_find(self, identifier):
             """
-            Find drivers based on name or ID
+            Find drivers based on name, ID or notes.
             """
             output = []
             for driver in drivers:
@@ -125,7 +125,7 @@ def main():
                     if driver.id == int(identifier):
                         output.append(driver.text())
                 else:
-                    if identifier.lower() in driver.name.lower():
+                    if identifier.lower() in driver.name.lower() or identifier.lower() in driver.notes.lower():
                         output.append(driver.text())
 
             print_side_by_side(output, 3, 95)
