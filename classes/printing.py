@@ -27,8 +27,6 @@ def len_no_ansi(string):
 
 def colored(msg, color, attributes=[]):
     output = col(msg, color, attrs=attributes)
-    with open('colortest.txt', 'w') as f:
-        f.write(output)
     return output
 
 def clear_terminal():
