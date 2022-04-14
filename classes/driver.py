@@ -22,6 +22,8 @@ class Driver:
     json_file: str
     notes: str
     wins: int
+    dnf: int
+    dns: int
     races: int
     podiums: int
     incident_points: int
@@ -40,6 +42,8 @@ class Driver:
         self.podiums = 0
         self.incident_points = 0
         self.incident_points_per_race = 0.0
+        self.dnf = 0
+        self.dns = 0
 
 
         
@@ -60,6 +64,8 @@ class Driver:
             self.incident_points = exists.incident_points
             self.incident_points_per_race = exists.incident_points_per_race
             self.url = f'https://lowfuelmotorsport.com/profile/{self.id}'
+            self.dns = exists.dns
+            self.dnf = exists.dnf
 
         else:
             pickle_save(self.save_file, self)
@@ -78,6 +84,8 @@ class Driver:
         """
         self.sessions = []
         self.wins = 0
+        self.dns = 0
+        self.dnf = 0
         self.podiums = 0
         self.incident_points = 0
         self.incident_points_per_race = 0.0
@@ -87,9 +95,9 @@ class Driver:
         print()
         print(f'{self.name} ({self.id})')
         print(self.url)
-        print(f'{self.races} sessions')
+        print(f'{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF')
         print(f'{self.wins} wins, {self.podiums} podiums')
-
+        print(f'{self.incident_points_per_race} incidents per race')
         print(f'Notes: {self.notes}')
 
         print()
@@ -104,7 +112,7 @@ class Driver:
             output = f'{self.name} ({self.id})\n'
 
         output = f'{output}{self.url}\n' 
-        output = f'{output}{self.races} sessions\n'
+        output = f'{output}{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}{self.incident_points_per_race} incidents per race\n'
         output = f'{output}Notes: {textwrap.fill(self.notes, 50)}\n'
@@ -152,6 +160,11 @@ class Driver:
                     self.wins += 1
                 if finish <=3:
                     self.podiums += 1
+
+                if new_race.dns:
+                    self.dns += 1
+                if new_race.dnf:
+                    self.dnf += 1
 
 
         self.sessions = sort_races(self.sessions)
@@ -260,7 +273,7 @@ class Driver:
         output = []
         for session in self.sessions:
             include = True
-            if session.dnf == False and len(session.laps) > 0:
+            if session.dnf == False and session.dns == False and len(session.laps) > 0:
                 for term in terms:
                     if (term.lower() not in session.track.lower()) and (term.lower() not in session.car_name.lower()):
                         include = False
@@ -348,7 +361,8 @@ def sort_races(races):
 
 
 
-
+def percentage(part, whole):
+    return f'{str(round(100 * float(part)/float(whole), 1))}%'
 
 
 def sort_array_of_dicts(array: list, field: str, reverse: bool = True):

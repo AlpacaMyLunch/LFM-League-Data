@@ -11,7 +11,7 @@ from termcolor import colored
 
 
 from classes.driver import Driver
-from classes.printing import COLOR_GREEN, print_side_by_side
+from classes.printing import COLOR_GREEN, print_side_by_side, replace_print
 from classes.race import compare_times
 
 PICKLE_DIR = './pickles/'
@@ -201,29 +201,31 @@ def main():
             for session in self.selected_driver.sessions:
                 session_id = session.session_id
                 split = session.split
-                for driver in drivers:
-                    if driver != self.selected_driver:
-                        for check_session in driver.sessions:
-                            include = True
-                            if check_session.session_id == session_id:
-                                
-                                data = {
-                                    'session': session_id,
-                                    'track': session.track,
-                                    'date': session.date,
-                                    'my position': session.finish_position,
-                                    'their position': check_session.finish_position
-                                }
+                if not session.dns and not session.dnf:
+                    for driver in drivers:
+                        if driver != self.selected_driver:
+                            for check_session in driver.sessions:
+                                include = True
+                                if check_session.session_id == session_id:
+                                    
+                                    data = {
+                                        'session': session_id,
+                                        'track': session.track,
+                                        'date': session.date,
+                                        'my position': session.finish_position,
+                                        'their position': check_session.finish_position,
+                                    }
 
-                                if check_session.split == split:
-                                    for term in search_terms:
-                                        if (term.lower() not in data['track'].lower()) and (term.lower() not in driver.name.lower()):
-                                            include = False
 
-                                    if include == True:
-                                        if driver.name not in shared:
-                                            shared[driver.name] = []
-                                        shared[driver.name].append(data)
+                                    if check_session.split == split and not check_session.dns and not check_session.dnf:
+                                        for term in search_terms:
+                                            if (term.lower() not in data['track'].lower()) and (term.lower() not in driver.name.lower()):
+                                                include = False
+
+                                        if include == True:
+                                            if driver.name not in shared:
+                                                shared[driver.name] = []
+                                            shared[driver.name].append(data)
 
 
             temp = {}
@@ -329,7 +331,16 @@ def main():
             if args == '':
                 print(colored('Recent races', COLOR_PROMPT))
                 for race in self.selected_driver.sessions[:10]:
-                    print(f" > {race.track} (session {race.session_id}) on {race.date} - finished {race.finish_position}")
+                    outcome = ''
+                    if race.dns:
+                        outcome = colored('DNS', 'red')
+                    elif race.dnf:
+                        outcome = colored('DNF', 'red')
+                    else:
+                        outcome = f'finished {race.finish_position}'
+                    
+                    
+                    print(f" > {race.track} (session {race.session_id}) on {race.date} - {outcome}")
 
             else:
 

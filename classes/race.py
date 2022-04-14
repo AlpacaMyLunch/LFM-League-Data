@@ -46,6 +46,7 @@ class Race:
     best_lap: str
     total_time: str
     dnf: bool
+    dns: bool
     gap: str
     best: dict
     opponents: list
@@ -93,6 +94,7 @@ class Race:
         self.car_year = extracted['car_year']
         self.total_time = extracted['total_time']
         self.dnf = extracted['dnf']
+        self.dns = extracted['dns']
         self.gap = extracted['gap']
         self.incidents = extracted['incidents']
         self.split = extracted['split']
@@ -147,11 +149,19 @@ class Race:
     def print(self):
         print(f"{self.track} | {self.date}")
         print(f'{self.car_year} {self.car_name} ({self.car_class})')
+        if self.dns:
+            print(colored('DID NOT START', 'red'))
+            return
+        elif self.dnf:
+            print(colored('DID NOT FINISH', 'red'))
+            return
         print(f'{self.start_position} -> to -> {self.finish_position}')
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
         print(self.url)
         print(f'Gap to P1: {self.gap}')
         print(f'Split {self.split}')
+        
+        
 
         
         at_a_time = 8
@@ -285,6 +295,7 @@ def extract_laps(data: dict, driver_id: int):
     car_year = None
     total_time = None
     dnf = None
+    dns = None
     gap = None
     incidents = 0
     name = None
@@ -371,6 +382,7 @@ def extract_laps(data: dict, driver_id: int):
                         car_year = result['year']
                         total_time = result['time']
                         dnf = bool(result['dnf'])
+                        dns = bool(result['dns'])
                         gap = result['gap']
                         incidents = result['incidents']
                         name = f"{result['vorname']} {result['nachname']}"
@@ -388,6 +400,7 @@ def extract_laps(data: dict, driver_id: int):
         'total_time': total_time,
         'dnf': dnf,
         'gap': gap,
+        'dns': dns,
         'incidents': incidents,
         'name': name,
         'analysis': analysis
