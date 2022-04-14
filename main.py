@@ -360,12 +360,21 @@ def main():
                 return
 
             number_of_opponents = 6 # default
-            if args:
-                try:
-                    number_of_opponents = int(args)
-                except:
-                    pass
-            self.selected_driver.common(number_of_opponents)
+            name_filters = []
+            name_filter = ''
+            args = args.split(' ')
+            for arg in args:
+                if arg.isnumeric():
+                    number_of_opponents = int(arg)
+                else:
+                    arg = arg.strip()
+                    name_filters.append(arg)
+                    name_filter = ' '.join(name_filters)
+            
+
+
+
+            self.selected_driver.common(number_of_opponents, name_filter)
 
         def do_races(self, args):
             if not self.selected_driver:

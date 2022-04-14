@@ -170,7 +170,7 @@ class Driver:
             )
 
 
-    def common(self, number_of_opponents: int = 6):
+    def common(self, number_of_opponents: int = 6, name_filter: str = ''):
         """
         Return a list of the most common opponents.
         """
@@ -181,14 +181,15 @@ class Driver:
             opponents = session.opponents
             for opponent in opponents:
                 if opponent['id'] != self.id:
-                    opponent = {
-                        'id': opponent['id'],
-                        'name': opponent['name']
-                    }
-                    if opponent['id'] not in counter:
-                        counter[opponent['id']] = 0
-                        holder.append(opponent)
-                    counter[opponent['id']] += 1
+                    if (name_filter == '') or (name_filter.lower() in opponent['name'].lower()):
+                        opponent = {
+                            'id': opponent['id'],
+                            'name': opponent['name']
+                        }
+                        if opponent['id'] not in counter:
+                            counter[opponent['id']] = 0
+                            holder.append(opponent)
+                        counter[opponent['id']] += 1
 
 
 
