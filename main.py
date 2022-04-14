@@ -11,8 +11,8 @@ from termcolor import colored
 
 
 from classes.driver import Driver
-from classes.printing import COLOR_GREEN, print_side_by_side, replace_print
-from classes.race import compare_times
+from classes.printing import COLOR_GREEN, print_side_by_side
+from classes.race import compare_times, http_request
 
 PICKLE_DIR = './pickles/'
 
@@ -28,6 +28,11 @@ COLOR_PURPLE = 'magenta'
 
 colorama.init()
 # / PRETTY
+
+user_ratings_cache = None
+user_safety_cache = None
+
+
 
 # UTILITY FUNCTIONS
 
@@ -74,6 +79,31 @@ def sort_array_of_dicts(array: list, field: str, reverse: bool = True):
     """
 
     return sorted(array, key=lambda d: d[field], reverse=reverse)
+
+
+def grab_all_user_ratings():
+    global user_ratings_cache
+    if user_ratings_cache:
+        return user_ratings_cache
+
+    url = 'https://api2.lowfuelmotorsport.com/api/statistics/rating?country='
+    response = http_request(url)
+    data = response.json()
+    data.reverse()
+    user_ratings_cache = data
+    return data
+
+def grab_all_user_safety():
+    global user_safety_cache
+    if user_safety_cache:
+        return user_safety_cache
+
+    url = 'https://api2.lowfuelmotorsport.com/api/statistics/safetyrating'
+    response = http_request(url)
+    data = response.json()
+    data.reverse()
+    user_safety_cache = data
+    return data
 
 
 # / END UTILITY FUNCTIONS
@@ -149,6 +179,12 @@ def main():
             """
             Add a new driver by ID
             """
+
+            for driver in drivers:
+                if id == str(driver.id):
+                    driver.print()
+                    return
+
             driver = Driver(id)
             driver.gather_sessions()
             drivers.append(driver)
@@ -454,7 +490,69 @@ def main():
                    print('Select a driver with the "select" command, or pass the argument "all"') 
 
 
+        def do_sandbag(self, args):
+            
+            data = grab_all_user_ratings()
+            how_many = 10 # default
 
+            name_filters = []
+            name_filter = ''
+            args = args.split(' ')
+            for arg in args:
+                if arg.isnumeric():
+                    how_many = int(arg)
+                else:
+                    arg = arg.strip()
+                    name_filters.append(arg)
+                    name_filter = ' '.join(name_filters).lower()
+
+
+            output = []
+            for driver in data:
+                id = driver['id']
+                name = f"{driver['vorname']} {driver['nachname']}"
+                elo = driver['rating']
+
+                if name_filter in name.lower():
+                    output.append(
+                        f'{elo} - {name} ({id})'
+                    )
+                    if len(output) == how_many:
+                        break
+
+            print_side_by_side(output, 4, 50)
+
+
+        def do_unsafe(self, args):
+            data = grab_all_user_safety()
+            how_many = 10 # default
+
+            name_filters = []
+            name_filter = ''
+            args = args.split(' ')
+            for arg in args:
+                if arg.isnumeric():
+                    how_many = int(arg)
+                else:
+                    arg = arg.strip()
+                    name_filters.append(arg)
+                    name_filter = ' '.join(name_filters).lower()
+
+
+            output = []
+            for driver in data:
+                id = driver['id']
+                name = f"{driver['vorname']} {driver['nachname']}"
+                sa = driver['safety_rating']
+
+                if name_filter in name.lower():
+                    output.append(
+                        f'{sa} - {name} ({id})'
+                    )
+                    if len(output) == how_many:
+                        break
+
+            print_side_by_side(output, 4, 50)
     terminal = Terminal(Cmd)
 
     terminal.cmdloop()
