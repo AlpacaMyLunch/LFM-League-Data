@@ -290,16 +290,6 @@ def main():
                                                 shared[driver.name] = []
                                             shared[driver.name].append(data)
 
-
-            temp = {}
-            # shared in a dict containing arrays.  want to sort by aray len
-            sorted_drivers = sorted( shared, key = lambda x: (len( shared[ x ] ), x), reverse = True )
-            for driver in sorted_drivers:
-                temp[driver] = shared[driver]
-
-            shared = temp
-
-
             output = []
             for driver in shared:
                 msg = f'{colored(driver, COLOR_SUCCESS)}\n'
@@ -314,7 +304,7 @@ def main():
                 msg = f'{msg} \n'
                 output.append(msg)
 
-            print_side_by_side(output, 2, 140, dynamic_height=True)
+            print_side_by_side(output, 2, 140, dynamic_height=True, organize_lengths=True)
 
         def do_chats(self, args):
             """
@@ -379,26 +369,38 @@ def main():
             
             output = []
 
-            temp = {}
-            sorted_tracks = sorted(self.selected_driver.tracks, key = lambda x: (len( self.selected_driver.tracks[ x ] ), x), reverse = True )
-            for track in sorted_tracks:
-                temp[track] = self.selected_driver.tracks[track]
 
-            tracks = temp
-
-            for track_name in tracks:
+            for track_name in self.selected_driver.tracks:
                 temp_output = f"{colored(track_name, 'green')}\n"
-                track_data = tracks[track_name]
+                track_data = self.selected_driver.tracks[track_name]
+                
+                best_lap = '10:59.999'
+                best_average = '10:59.999'
+                for car in track_data:
+                    compared = compare_times(best_lap, track_data[car]['best'])
+                    if compared < 0:
+                        best_lap = track_data[car]['best']
+
+                    compared = compare_times(best_average, track_data[car]['average'])
+                    if compared < 0:
+                        best_average = track_data[car]['average']
+
                 for car in track_data:
                     car_best = track_data[car]['best']
                     car_average = track_data[car]['average']
                     car_races = track_data[car]['races']
                     temp_output = f"{temp_output}   {colored(car, 'blue')}\n"
+
+                    if car_best == best_lap:
+                        car_best = colored(car_best, 'magenta')
+                    if car_average == best_average:
+                        car_average = colored(car_average, 'magenta')
+
                     temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Average: {car_average}\n\n"
 
                 output.append(temp_output)
 
-            print_side_by_side(output, 4, 60, dynamic_height=True)
+            print_side_by_side(output, 4, 70, dynamic_height=True, organize_lengths=True)
 
 
 

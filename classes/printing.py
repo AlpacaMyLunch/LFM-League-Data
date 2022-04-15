@@ -40,12 +40,14 @@ def replace_print(msg: str):
 
 
 
-def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height=False):
+def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height=False, organize_lengths=False):
 
     most_lines = 0
+
+
+    # Word-Wrap the text so it doesn't extend past the defined line_len
     temp = []
     for msg in msgs:
-
         while True:
             msg = msg.split('\n')
             breakout = True
@@ -55,21 +57,29 @@ def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_marg
                     line = textwrap.fill(line, line_len)
                     msg[idx] = line
                     breakout = False
-            
             if breakout:
                 break
             else:
                 msg = '\n'.join(msg)
-
-            
-
-
         temp.append(msg)
         lines = len(msg)
         if lines > most_lines:
             most_lines = lines
-
     msgs = temp
+    # word-wrap complete
+
+    # Organize the list of messages by number of lines, if organize_lengths is True
+    if organize_lengths:
+        temp = []
+        for msg in msgs:
+            temp.append('\n'.join(msg))
+        temp.sort(key=len, reverse=True)
+        msgs = []
+        for msg in temp:
+            msgs.append(msg.split('\n'))
+
+    # end organize
+
 
     for i in range(0, len(msgs), at_a_time):
         current_messages = msgs[i:i+at_a_time]
