@@ -128,10 +128,18 @@ class Race:
             'gap': self.gap,
             'chat': self.chat,
             'laps': [],
-            'hypothetical_best': self.analysis['hypothetical'].json(),
-            'averages': self.analysis['average'].json(),
             'url': self.url
         }
+
+        if 'hypothetical' in self.analysis:
+            output['hypothetical_best'] = self.analysis['hypothetical'].json(),
+        else:
+            output['hypothetical_best'] = None
+
+        if 'average' in self.analysis:
+            output['averages'] = self.analysis['average'].json(),
+        else:
+            output['averages'] = None
 
         for lap in self.laps:
             output['laps'].append(lap.json())

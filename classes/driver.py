@@ -6,7 +6,7 @@ from datetime import datetime
 
 from os import path, remove
 
-from classes.race import Race
+from classes.race import Race, compare_times, average_time
 from classes.printing import print_side_by_side, replace_print, colored
 
 PICKLE_DIR = './pickles/'
@@ -29,6 +29,7 @@ class Driver:
     incident_points: int
     url: str
     incident_points_per_race: float
+    tracks: dict
 
     def __init__(self, id: int):
         
@@ -44,7 +45,7 @@ class Driver:
         self.incident_points_per_race = 0.0
         self.dnf = 0
         self.dns = 0
-
+        self.tracks = {}
 
         
         self.save_file = f'{PICKLE_DIR}{self.id}.pkl'
@@ -66,6 +67,7 @@ class Driver:
             self.url = f'https://lowfuelmotorsport.com/profile/{self.id}'
             self.dns = exists.dns
             self.dnf = exists.dnf
+            self.tracks = exists.tracks
 
         else:
             pickle_save(self.save_file, self)
@@ -96,6 +98,7 @@ class Driver:
         self.podiums = 0
         self.incident_points = 0
         self.incident_points_per_race = 0.0
+        self.tracks = {}
         self.gather_sessions()
 
     def print(self):
@@ -173,6 +176,28 @@ class Driver:
                 if new_race.dnf:
                     self.dnf += 1
 
+                if not new_race.dns:
+                    if len(new_race.laps) > 0:
+                        track = new_race.track
+                        if track not in self.tracks:
+                            self.tracks[track] = {}
+                        
+                        car = f'{new_race.car_year} {new_race.car_name}'
+                        if car not in self.tracks[track]:
+                            self.tracks[track][car] = {
+                                'races': 0,
+                                'best': '10:59.999',
+                                'average_laps': [],
+                                'average': None
+                            }
+
+                        self.tracks[track][car]['races'] += 1
+                        compared = compare_times(self.tracks[track][car]['best'], new_race.best_lap)
+                        if compared < 0:
+                            self.tracks[track][car]['best'] = new_race.best_lap
+                        self.tracks[track][car]['average_laps'].append(new_race.analysis['average'].time)
+                        self.tracks[track][car]['average'] = average_time(self.tracks[track][car]['average_laps'])
+
 
         self.sessions = sort_races(self.sessions)
         self.races = len(self.sessions)
@@ -224,7 +249,7 @@ class Driver:
                     output.append(f'{counter[id]} races with {opponent["name"]} ({opponent["id"]})')
                     break
 
-        print_side_by_side(output, 3, 60)
+        print_side_by_side(output, 5, 60)
 
 
 
@@ -238,7 +263,8 @@ class Driver:
                 'name': self.name,
                 'sessions': [],
                 'notes': self.notes,
-                'incidents per race': self.incident_points_per_race
+                'incidents per race': self.incident_points_per_race,
+                'tracks': self.tracks
             }
         
         for session in self.sessions:

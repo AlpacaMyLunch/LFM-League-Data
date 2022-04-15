@@ -1,5 +1,6 @@
 import json
 import pickle
+from tempfile import TemporaryDirectory
 import colorama
 
 
@@ -159,6 +160,7 @@ def main():
             check = input('Are you sure?  Type "YES" to confirm. ')
             if check != 'YES':
                 print(colored('    No confirmation.  Not deleting the driver', 'red'))
+                print('')
                 return
 
             
@@ -167,6 +169,7 @@ def main():
             self.selected_driver = None
             self.prompt = DEFAULT_PROMPT
             print(colored('   Driver was deleted.', 'green'))
+            print('')
 
 
         def do_find(self, identifier):
@@ -369,17 +372,35 @@ def main():
             Print summary of the selected user's tracks
             """
 
-            tracks = {}
-            if self.selected_driver:
-                for session in self.selected_driver.sessions:
-                    track = session.track
-                    if track not in tracks:
-                        tracks[track] = 0
-                    tracks[track] += 1
 
-            tracks = {k: v for k, v in sorted(tracks.items(), key=lambda item: item[1], reverse=True)}
-            for track in tracks:
-                print(track, tracks[track])
+            if not self.selected_driver:
+                print('Please select a driver')
+                return
+            
+            output = []
+
+            temp = {}
+            sorted_tracks = sorted(self.selected_driver.tracks, key = lambda x: (len( self.selected_driver.tracks[ x ] ), x), reverse = True )
+            for track in sorted_tracks:
+                temp[track] = self.selected_driver.tracks[track]
+
+            tracks = temp
+
+            for track_name in tracks:
+                temp_output = f"{colored(track_name, 'green')}\n"
+                track_data = tracks[track_name]
+                for car in track_data:
+                    car_best = track_data[car]['best']
+                    car_average = track_data[car]['average']
+                    car_races = track_data[car]['races']
+                    temp_output = f"{temp_output}   {colored(car, 'blue')}\n"
+                    temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Average: {car_average}\n\n"
+
+                output.append(temp_output)
+
+            print_side_by_side(output, 4, 60, dynamic_height=True)
+
+
 
         def do_race(self, args):
 
