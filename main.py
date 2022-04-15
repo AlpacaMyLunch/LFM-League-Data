@@ -298,7 +298,7 @@ def main():
                         session['my position'] = colored(f"P{session['my position']}", COLOR_GREEN)
                         session['their position'] = f'P{session["their position"]}'
                     else:
-                        session['their position'] = colored(f"P{session['their position']}", COLOR_GREEN)
+                        session['their position'] = colored(f"P{session['their position']}", COLOR_YELLOW)
                         session['my position'] = f'P{session["my position"]}'
                     msg = f'{msg}  {session["date"][0:10]} at {session["track"]} ({session["session"]}) {self.selected_driver.name} {session["my position"]} - {session["their position"]} {driver}\n'
                 msg = f'{msg} \n'

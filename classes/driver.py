@@ -195,8 +195,10 @@ class Driver:
                         compared = compare_times(self.tracks[track][car]['best'], new_race.best_lap)
                         if compared < 0:
                             self.tracks[track][car]['best'] = new_race.best_lap
-                        self.tracks[track][car]['average_laps'].append(new_race.analysis['average'].time)
-                        self.tracks[track][car]['average'] = average_time(self.tracks[track][car]['average_laps'])
+                        
+                        if new_race.analysis['average'].time != '00:00.000':
+                            self.tracks[track][car]['average_laps'].append(new_race.analysis['average'].time)
+                            self.tracks[track][car]['average'] = average_time(self.tracks[track][car]['average_laps'])
 
 
         self.sessions = sort_races(self.sessions)
