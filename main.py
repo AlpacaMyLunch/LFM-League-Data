@@ -32,7 +32,7 @@ colorama.init()
 user_ratings_cache = None
 user_safety_cache = None
 
-
+DEFAULT_PROMPT = colored(' [*] LFM >> ', COLOR_PROMPT, attrs=['bold'])
 
 # UTILITY FUNCTIONS
 
@@ -125,7 +125,8 @@ def main():
 
 
     class Terminal(Cmd):
-        prompt = colored(' [*] LFM >> ', COLOR_PROMPT, attrs=['bold'])
+        global DEFAULT_PROMPT
+        prompt = DEFAULT_PROMPT
         selected_driver = None
 
         def default(self, args):
@@ -145,6 +146,29 @@ def main():
 
             print_side_by_side(driver_outputs, 4, 75)
 
+        def do_delete(self, args):
+            """
+            Delete a driver
+            """
+
+            if not self.selected_driver:
+                print('A driver must be selected')
+                return
+
+            
+            check = input('Are you sure?  Type "YES" to confirm. ')
+            if check != 'YES':
+                print(colored('    No confirmation.  Not deleting the driver', 'red'))
+                return
+
+            
+            self.selected_driver.delete()
+            drivers.remove(self.selected_driver)
+            self.selected_driver = None
+            self.prompt = DEFAULT_PROMPT
+            print(colored('   Driver was deleted.', 'green'))
+
+
         def do_find(self, identifier):
             """
             Find drivers based on name, ID or notes.
@@ -153,10 +177,10 @@ def main():
             for driver in drivers:
                 if identifier.isnumeric():
                     if driver.id == int(identifier):
-                        output.append(driver.text())
+                        output.append(driver.text(colorful=True))
                 else:
                     if identifier.lower() in driver.name.lower() or identifier.lower() in driver.notes.lower():
-                        output.append(driver.text())
+                        output.append(driver.text(colorful=True))
 
             print_side_by_side(output, 3, 95)
 

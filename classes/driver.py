@@ -4,7 +4,7 @@ import pickle
 import textwrap
 from datetime import datetime
 
-from os import path
+from os import path, remove
 
 from classes.race import Race
 from classes.printing import print_side_by_side, replace_print, colored
@@ -76,6 +76,13 @@ class Driver:
     def update_notes(self, notes: str):
         self.notes = notes
         pickle_save(self.save_file, self)
+
+    def delete(self):
+        """
+        Deletes the pickle file.  Driver will not be loaded next time.
+        """
+
+        remove(self.save_file)
 
 
     def force_update(self):

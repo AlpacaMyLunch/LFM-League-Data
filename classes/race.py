@@ -154,7 +154,8 @@ class Race:
             return
         elif self.dnf:
             print(colored('DID NOT FINISH', 'red'))
-            return
+            if len(self.laps) < 1:
+                return
         print(f'{self.start_position} -> to -> {self.finish_position}')
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
         print(self.url)
