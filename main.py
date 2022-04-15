@@ -1,6 +1,5 @@
 import json
 import pickle
-from tempfile import TemporaryDirectory
 import colorama
 
 
@@ -12,7 +11,7 @@ from termcolor import colored
 
 
 from classes.driver import Driver
-from classes.printing import COLOR_GREEN, print_side_by_side
+from classes.printing import COLOR_GREEN, print_side_by_side, clear_terminal
 from classes.race import compare_times, http_request
 
 PICKLE_DIR = './pickles/'
@@ -339,6 +338,8 @@ def main():
 
             print_side_by_side(output, 5, 60)
 
+        def do_clear(self, args):
+            clear_terminal()
 
         def do_cars(self, args):
             """
