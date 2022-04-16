@@ -487,7 +487,7 @@ def pretty_time(time_value, best_value, valid_lap=True):
 
 def gather_data(session_id: int):
     # print(f'gathering session {session_id}', end='\r')
-    replace_print(f'gathering session {session_id}')
+    replace_print(f'gathering session {session_id} {" " * 25}')
     cache = load_cache(session_id)
     if cache:
         return cache
