@@ -1,13 +1,15 @@
 import json
 import pickle
+from re import T
 import colorama
-
+import collections
 
 
 from itertools import tee
 from os import path, listdir
 from cmd import Cmd
 from termcolor import colored
+from datetime import datetime
 
 
 from classes.driver import Driver
@@ -170,6 +172,14 @@ def main():
             print(colored('   Driver was deleted.', 'green'))
             print('')
 
+
+        def do_unselect(self, args):
+            """
+            Unselect the current driver
+            """
+
+            self.selected_driver = None
+            self.prompt = DEFAULT_PROMPT
 
         def do_find(self, identifier):
             """
@@ -364,42 +374,125 @@ def main():
             """
 
 
-            if not self.selected_driver:
-                print('Please select a driver')
-                return
+            
             
             output = []
 
+            args = args.strip()
+            search_terms = args.split(' ')
+            
+            if self.selected_driver:
 
-            for track_name in self.selected_driver.tracks:
-                temp_output = f"{colored(track_name, 'green')}\n"
-                track_data = self.selected_driver.tracks[track_name]
+                for track_name in self.selected_driver.tracks:
+
+                    temp_output = f"{colored(track_name, 'green')}\n"
+                    track_data = self.selected_driver.tracks[track_name]
+                    
+                    best_lap = '10:59.999'
+                    best_average = '10:59.999'
+
+                    include_track = False
+
+                    for car in track_data:
+                        include = True
+                        for term in search_terms:
+                            if term.lower() not in track_name.lower() and term.lower() not in car.lower():
+                                include = False
+                                break
+                            
+                        if include:
+                            compared = compare_times(best_lap, track_data[car]['best'])
+                            if compared < 0:
+                                best_lap = track_data[car]['best']
+
+                            compared = compare_times(best_average, track_data[car]['average'])
+                            if compared < 0:
+                                best_average = track_data[car]['average']
+
+                    for car in track_data:
+                        include = True
+                        for term in search_terms:
+                            if term.lower() not in track_name.lower() and term.lower() not in car.lower():
+                                include = False
+                                break
+
+                        if include:
+                            include_track = True
+                            car_best = track_data[car]['best']
+                            car_average = track_data[car]['average']
+                            car_races = track_data[car]['races']
+                            temp_output = f"{temp_output}   {colored(car, 'blue')}\n"
+
+                            if car_best == best_lap:
+                                car_best = colored(car_best, 'magenta')
+                            if car_average == best_average:
+                                car_average = colored(car_average, 'magenta')
+
+                            temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Average: {car_average}\n\n"
+
+                    if include_track:
+                        output.append(temp_output)
+
+            else:
+
+                zero_seconds = datetime.strptime('00:00.000', '%M:%S.%f')
+                data = {}
+                for driver in drivers:
+                    for track_name in driver.tracks:
+                        if track_name not in data:
+                            data[track_name] = {'Drivers': {}, 'Best': '10:59.999'}
+                        
+                        if driver.name not in data[track_name]['Drivers']:
+                            data[track_name]['Drivers'][driver.name] = {
+                                'avg': '',
+                                'seconds': 999
+                            }
+                        
+                        track_data = driver.tracks[track_name]
+                        best_average = '10:59.999'
+
+                        for car in track_data:
+                            if track_data[car]['average']:
+                                compared = compare_times(best_average, track_data[car]['average'])
+                                if compared < 0:
+                                    best_average = track_data[car]['average']
+                        
+                        
+                        data[track_name]['Drivers'][driver.name]['avg'] = best_average
+                        secs = datetime.strptime(best_average, '%M:%S.%f')
+                        diff = secs - zero_seconds
+                        data[track_name]['Drivers'][driver.name]['seconds'] = round(diff.total_seconds(), 3)
+
+                        compared = compare_times(data[track_name]['Best'], best_average)
+                        if compared < 0:
+                            data[track_name]['Best'] = best_average
+
+            
+
                 
-                best_lap = '10:59.999'
-                best_average = '10:59.999'
-                for car in track_data:
-                    compared = compare_times(best_lap, track_data[car]['best'])
-                    if compared < 0:
-                        best_lap = track_data[car]['best']
 
-                    compared = compare_times(best_average, track_data[car]['average'])
-                    if compared < 0:
-                        best_average = track_data[car]['average']
+                for track_name in data:
+                    ordered = {}
 
-                for car in track_data:
-                    car_best = track_data[car]['best']
-                    car_average = track_data[car]['average']
-                    car_races = track_data[car]['races']
-                    temp_output = f"{temp_output}   {colored(car, 'blue')}\n"
+                    for k, v in sorted(data[track_name]['Drivers'].items(), key=lambda e: e[1]['seconds']):
+                        ordered[k] = v
 
-                    if car_best == best_lap:
-                        car_best = colored(car_best, 'magenta')
-                    if car_average == best_average:
-                        car_average = colored(car_average, 'magenta')
+                    data[track_name]['Drivers'] = ordered
 
-                    temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Average: {car_average}\n\n"
+                for track_name in data:
+                    temp = f'{colored(track_name, "green")}\n'
+                    for driver in data[track_name]['Drivers']:
+                        avg = data[track_name]['Drivers'][driver]['avg']
+                        if avg == data[track_name]['Best']:
+                            avg = colored(avg, 'magenta')
+                        temp = f'{temp}  {colored(driver, "blue")}: {avg}\n'
 
-                output.append(temp_output)
+                    temp = f'{temp}\n'
+                    output.append(temp)
+
+
+                
+
 
             print_side_by_side(output, 4, 70, dynamic_height=True, organize_lengths=True)
 
