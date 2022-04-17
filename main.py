@@ -370,7 +370,12 @@ def main():
 
         def do_tracks(self, args):
             """
-            Print summary of the selected user's tracks
+            Print summary of tracks.
+            If there is a selected user the info will focus on that user.
+            If there is no selected user we will grab data for all users.
+
+            When there is no selected user the search terms will be used to 
+            highlight the names of drivers.
             """
 
 
@@ -380,6 +385,8 @@ def main():
 
             args = args.strip()
             search_terms = args.split(' ')
+            if '' in search_terms:
+                search_terms.remove('')
             
             if self.selected_driver:
 
@@ -485,7 +492,15 @@ def main():
                         avg = data[track_name]['Drivers'][driver]['avg']
                         if avg == data[track_name]['Best']:
                             avg = colored(avg, 'magenta')
-                        temp = f'{temp}  {colored(driver, "blue")}: {avg}\n'
+
+                        driver_print = colored(driver, 'blue')
+                        if len(search_terms) > 0:
+                            for term in search_terms:
+                                if term.lower() in driver.lower():
+                                    driver_print = colored(driver, 'yellow')
+                                    break
+
+                        temp = f'{temp}  {driver_print}: {avg}\n'
 
                     temp = f'{temp}\n'
                     output.append(temp)
