@@ -53,6 +53,8 @@ class Race:
     url: str
     analysis: dict
     event_id: int
+    driver_elo: int
+    driver_safety_rating: float
 
     def __init__(self, session_id: int, driver_id: int):
 
@@ -98,6 +100,9 @@ class Race:
         self.gap = extracted['gap']
         self.incidents = extracted['incidents']
         self.split = extracted['split']
+        self.driver_elo = extracted['elo']
+        self.driver_safety_rating = extracted['safety_rating']
+        
 
 
         
@@ -128,7 +133,9 @@ class Race:
             'gap': self.gap,
             'chat': self.chat,
             'laps': [],
-            'url': self.url
+            'url': self.url,
+            'driver_elo': self.driver_elo,
+            'driver_safety_rating': self.driver_safety_rating
         }
 
         if 'hypothetical' in self.analysis:
@@ -308,6 +315,8 @@ def extract_laps(data: dict, driver_id: int):
     gap = None
     incidents = 0
     name = None
+    elo = None
+    sr = None
 
 
 
@@ -317,6 +326,10 @@ def extract_laps(data: dict, driver_id: int):
                 results = data_split[xcar_class]['OVERALL']
                 for result in results:
                     if result['driver_id'] == driver_id:
+                        sr = result['safety_rating']
+                        elo = result['rating']
+                        if result['ratingGain'] != None:
+                            elo += result['ratingGain']
                         data_laps = result['lapDetail']
 
                         for data_lap in data_laps:
@@ -412,7 +425,9 @@ def extract_laps(data: dict, driver_id: int):
         'dns': dns,
         'incidents': incidents,
         'name': name,
-        'analysis': analysis
+        'analysis': analysis,
+        'elo': elo,
+        'safety_rating': sr
     }
 
 
@@ -487,7 +502,7 @@ def pretty_time(time_value, best_value, valid_lap=True):
 
 def gather_data(session_id: int):
     # print(f'gathering session {session_id}', end='\r')
-    replace_print(f'gathering session {session_id} {" " * 25}')
+    replace_print(f'gathering session {session_id}  ')
     cache = load_cache(session_id)
     if cache:
         return cache

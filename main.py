@@ -124,6 +124,8 @@ def main():
             Driver(driver_id)
             )
 
+        drivers.sort(key=lambda x: x.elo, reverse=True)
+
 
 
     class Terminal(Cmd):
@@ -146,7 +148,7 @@ def main():
                 # driver.print()
                 driver_outputs.append(driver.text(colorful=True))
 
-            print_side_by_side(driver_outputs, 4, 75)
+            print_side_by_side(driver_outputs, 4, 75, dynamic_height=True)
 
         def do_delete(self, args):
             """

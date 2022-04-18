@@ -30,6 +30,8 @@ class Driver:
     url: str
     incident_points_per_race: float
     tracks: dict
+    elo: int
+    safety_rating: float
 
     def __init__(self, id: int):
         
@@ -45,6 +47,8 @@ class Driver:
         self.incident_points_per_race = 0.0
         self.dnf = 0
         self.dns = 0
+        self.elo = 0
+        self.safety_rating = 0.0
         self.tracks = {}
 
         
@@ -68,6 +72,13 @@ class Driver:
             self.dns = exists.dns
             self.dnf = exists.dnf
             self.tracks = exists.tracks
+
+            try:
+                self.elo = exists.elo
+                self.safety_rating = exists.safety_rating
+            except:
+                self.elo = 0
+                self.safety_rating = 0.0
 
         else:
             pickle_save(self.save_file, self)
@@ -103,7 +114,7 @@ class Driver:
 
     def print(self):
         print()
-        print(f'{self.name} ({self.id})')
+        print(f'{self.name} ({self.elo} elo, {self.safety_rating} sr)')
         print(self.url)
         print(f'{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF')
         print(f'{self.wins} wins, {self.podiums} podiums')
@@ -117,7 +128,7 @@ class Driver:
         Same as print, but returns a string instead of output to console
         """
         if colorful:
-            output = f'{colored(self.name, "blue")} ({self.id})\n'
+            output = f'{colored(self.name, "blue")} ({self.elo} elo, {self.safety_rating} sr)\n'
         else:
             output = f'{self.name} ({self.id})\n'
 
@@ -203,6 +214,14 @@ class Driver:
 
         self.sessions = sort_races(self.sessions)
         self.races = len(self.sessions)
+
+
+        # Grab ELO and safety from most recent session (first in list)
+        most_recent = self.sessions[0]
+        self.elo = most_recent.driver_elo
+        self.safety_rating = most_recent.driver_safety_rating
+
+
         self.incident_points_per_race = round(self.incident_points / self.races, 2)
         pickle_save(self.save_file, self)
         replace_print('')
@@ -262,6 +281,8 @@ class Driver:
         
         output = {
                 'id': self.id,
+                'elo': self.elo,
+                'safety_rating': self.safety_rating,
                 'name': self.name,
                 'sessions': [],
                 'notes': self.notes,
