@@ -332,42 +332,50 @@ def extract_laps(data: dict, driver_id: int):
                             elo += result['ratingGain']
                         data_laps = result['lapDetail']
 
+                        laps_added = []
                         for data_lap in data_laps:
+                            
+                            lap_number = data_lap['car_lap']
+                            if lap_number not in laps_added:
+                                laps_added.append(lap_number)
+                                lap = Lap(lap_number)
+                                if data_lap['lap_valid'] == 0:
+                                    lap.invalidate()
 
-                            lap = Lap(data_lap['car_lap'])
-                            if data_lap['lap_valid'] == 0:
-                                lap.invalidate()
-
-                            sector_counter = 1
-                            for data_sector in data_lap['splits']:
-                                sector_header = f'Sector {sector_counter}'
-                                if sector_header not in sector_analysis:
-                                    sector_analysis[sector_header] = []
-                                if lap.valid:
-                                    if lap.number != 1:
-                                        sector_analysis[sector_header].append(data_sector)
-                                    if sector_header not in best:
-                                        best[sector_header] = data_sector
-
-                                    else:
-                                        compared = compare_times(best[sector_header], data_sector)
-                                        if compared < 0:
+                                sector_counter = 1
+                                for data_sector in data_lap['splits']:
+                                    sector_header = f'Sector {sector_counter}'
+                                    if sector_header not in sector_analysis:
+                                        sector_analysis[sector_header] = []
+                                    if lap.valid:
+                                        if lap.number != 1:
+                                            try:
+                                                sector_analysis[sector_header].append(data_sector)
+                                            except:
+                                                print('')
+                                                print(f'Problem in lap {lap.number}, {sector_header}\n\n')
+                                        if sector_header not in best:
                                             best[sector_header] = data_sector
 
-                                sector = Sector(data_sector, sector_counter)
-                                sector_counter += 1
-                                lap.add_sector(sector)
+                                        else:
+                                            compared = compare_times(best[sector_header], data_sector)
+                                            if compared < 0:
+                                                best[sector_header] = data_sector
 
-                            
-                            if lap.valid:
-                                if 'total' not in best:
-                                    best['total'] = lap.time
-                                else:
-                                    compared = compare_times(best['total'], lap.time)
-                                    if compared < 0:
+                                    sector = Sector(data_sector, sector_counter)
+                                    sector_counter += 1
+                                    lap.add_sector(sector)
+
+                                
+                                if lap.valid:
+                                    if 'total' not in best:
                                         best['total'] = lap.time
+                                    else:
+                                        compared = compare_times(best['total'], lap.time)
+                                        if compared < 0:
+                                            best['total'] = lap.time
 
-                            laps.append(lap)
+                                laps.append(lap)
 
 
                         hypothetical_lap = Lap(-1)
@@ -408,6 +416,7 @@ def extract_laps(data: dict, driver_id: int):
                         gap = result['gap']
                         incidents = result['incidents']
                         name = f"{result['vorname']} {result['nachname']}"
+                        break
 
     if not split:
         split = -1

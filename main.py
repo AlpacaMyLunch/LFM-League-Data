@@ -107,7 +107,12 @@ def grab_all_user_safety():
     user_safety_cache = data
     return data
 
+def id_in_drivers(id: int, drivers: list):
+    for driver in drivers:
+        if driver.id == id:
+            return True
 
+    return False
 # / END UTILITY FUNCTIONS
 
 
@@ -226,6 +231,7 @@ def main():
             driver = Driver(id)
             driver.gather_sessions()
             drivers.append(driver)
+            drivers.sort(key=lambda x: x.elo, reverse=True)
 
         def do_update(self, all):
             if all:
@@ -579,7 +585,23 @@ def main():
 
 
 
-            self.selected_driver.common(number_of_opponents, name_filter)
+            opponents = self.selected_driver.common(number_of_opponents, name_filter)
+
+            output = []
+            for driver in opponents:
+                id = driver['id']
+                if id_in_drivers(id, drivers):
+                    driver['name'] = colored(driver['name'], 'blue')
+
+                
+                output.append(
+                    f"{driver['races']} races with {driver['name']} ({driver['id']})"
+                )
+
+            
+            print_side_by_side(output, 5, 50)
+            
+                
 
         def do_races(self, args):
             if not self.selected_driver:
@@ -671,6 +693,9 @@ def main():
                 name = f"{driver['vorname']} {driver['nachname']}"
                 elo = driver['rating']
 
+                if id_in_drivers(id, drivers):
+                    name = colored(name, 'blue')
+
                 if name_filter in name.lower():
                     output.append(
                         f'{elo} - {name} ({id})'
@@ -702,7 +727,8 @@ def main():
                 id = driver['id']
                 name = f"{driver['vorname']} {driver['nachname']}"
                 sa = driver['safety_rating']
-
+                if id_in_drivers(id, drivers):
+                    name = colored(name, 'blue')
                 if name_filter in name.lower():
                     output.append(
                         f'{sa} - {name} ({id})'

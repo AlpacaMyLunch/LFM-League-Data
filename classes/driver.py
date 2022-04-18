@@ -1,5 +1,6 @@
 import json
 import requests
+import time
 import pickle
 import textwrap
 from datetime import datetime
@@ -145,12 +146,30 @@ class Driver:
         basic info about the session
         """
 
+        at_a_time = 250
+
         if self.name != '':
             print(f'Updating sessions for {self.name}...')
-        url = f'{BASE_URL}users/getUsersPastRaces/{self.id}?start=0&limit=99999'
 
-        request = http_request(url)
-        data = request.json()
+        start = 0
+        data = []
+        while True:
+            url = f'{BASE_URL}users/getUsersPastRaces/{self.id}?start={start}&limit={at_a_time}'
+
+            request = http_request(url)
+            new_results = request.json()
+            if len(new_results) == 0:
+                break
+
+            data += new_results
+
+            if len(new_results) < at_a_time:
+                break
+
+
+            start += at_a_time - 1
+            time.sleep(.5)
+            
 
         added_session_counter = 0
       
@@ -267,10 +286,15 @@ class Driver:
             for opponent in holder:
                 if opponent['id'] == id:
                     opponent['races'] = counter[id]
-                    output.append(f'{counter[id]} races with {opponent["name"]} ({opponent["id"]})')
+                    # output.append(f'{counter[id]} races with {opponent["name"]} ({opponent["id"]})')
+                    output.append({
+                        'name': opponent['name'],
+                        'id': opponent['id'],
+                        'races': counter[id]
+                    })
                     break
 
-        print_side_by_side(output, 5, 60)
+        return output
 
 
 
