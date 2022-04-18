@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 from classes.printing import print_side_by_side, replace_print
 
 from classes.sector import Sector
@@ -528,7 +529,21 @@ def http_request(url: str):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"
         }
-    return requests.get(url, headers=headers)
+    
+    attempts = 0
+    while True:
+        try:
+            attempts += 1
+            req = requests.get(url, headers=headers)
+            if req.ok:
+                return req
+        except:
+            time.sleep(attempts * 0.5)
+
+        if attempts > 5:
+            print(colored(f'    ... problems with http requests on {url}', 'red'))
+            print('')
+
 
 def compare_times(time_1: str, time_2: str):
     """

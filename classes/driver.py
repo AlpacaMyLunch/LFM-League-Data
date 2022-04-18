@@ -7,7 +7,7 @@ from datetime import datetime
 
 from os import path, remove
 
-from classes.race import Race, compare_times, average_time
+from classes.race import Race, compare_times, average_time, http_request
 from classes.printing import print_side_by_side, replace_print, colored
 
 PICKLE_DIR = './pickles/'
@@ -34,6 +34,10 @@ class Driver:
     elo: int
     safety_rating: float
 
+    # Do our sessions go back to the very first race?
+    # (Sessions might be cut short if script crashed during an update.)
+    complete: bool
+
     def __init__(self, id: int):
         
 
@@ -51,6 +55,7 @@ class Driver:
         self.elo = 0
         self.safety_rating = 0.0
         self.tracks = {}
+        self.complete = False
 
         
         self.save_file = f'{PICKLE_DIR}{self.id}.pkl'
@@ -77,9 +82,11 @@ class Driver:
             try:
                 self.elo = exists.elo
                 self.safety_rating = exists.safety_rating
+                self.complete = exists.complete
             except:
                 self.elo = 0
                 self.safety_rating = 0.0
+                self.complete = False
 
         else:
             pickle_save(self.save_file, self)
@@ -111,6 +118,7 @@ class Driver:
         self.incident_points = 0
         self.incident_points_per_race = 0.0
         self.tracks = {}
+        self.complete = False
         self.gather_sessions()
 
     def print(self):
@@ -146,7 +154,7 @@ class Driver:
         basic info about the session
         """
 
-        at_a_time = 250
+        at_a_time = 200
 
         if self.name != '':
             print(f'Updating sessions for {self.name}...')
@@ -155,6 +163,7 @@ class Driver:
         data = []
         while True:
             url = f'{BASE_URL}users/getUsersPastRaces/{self.id}?start={start}&limit={at_a_time}'
+            # print(url)
 
             request = http_request(url)
             new_results = request.json()
@@ -166,8 +175,24 @@ class Driver:
             if len(new_results) < at_a_time:
                 break
 
+            
 
             start += at_a_time - 1
+
+            if self.complete:
+                # We know that we aren't missing any sessions from the user's beginning.
+                # Keep checking for new sessions up until the point where we find an
+                # already existing one.
+                breakout = False
+                for result in new_results:
+                    id = result['race_id']
+                    if self.session_exists(id):
+                        breakout = True
+                        break
+
+                if breakout:
+                    break
+
             time.sleep(.5)
             
 
@@ -179,6 +204,7 @@ class Driver:
                 self.name = f"{driver_data['vorname']} {driver_data['nachname']}"
                 print(f'Updating sessions for {self.name}...')
                 self.json_file = f'{JSON_DIR}{self.name}.json'
+                pickle_save(self.save_file, self)
 
             if not self.session_exists(race['race_id']):
                 start = race['start_pos']
@@ -254,6 +280,7 @@ class Driver:
                 f'  added {colored(added_session_counter, "blue")} session{s} for {self.name}{" " * 30}'
             )
 
+        self.complete = True
 
     def common(self, number_of_opponents: int = 6, name_filter: str = ''):
         """
@@ -408,11 +435,7 @@ def compare_times(time_1: str, time_2: str):
 
     return diff.total_seconds()
 
-def http_request(url: str):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"
-        }
-    return requests.get(url, headers=headers)
+
 
 
 def sort_races(races):

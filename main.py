@@ -243,6 +243,8 @@ def main():
                     self.selected_driver.gather_sessions()
                 else:
                     print('Select a driver with the "select" command, or pass the argument "all"')
+
+            drivers.sort(key=lambda x: x.elo, reverse=True)
         
         def do_print(self, args):
             if self.selected_driver:
@@ -599,7 +601,7 @@ def main():
                 )
 
             
-            print_side_by_side(output, 5, 50)
+            print_side_by_side(output, 5, 60)
             
                 
 
