@@ -1,5 +1,4 @@
 import json
-import requests
 import time
 import pickle
 import textwrap
@@ -13,7 +12,6 @@ from classes.printing import print_side_by_side, replace_print, colored
 PICKLE_DIR = './pickles/'
 JSON_DIR = './json/'
 BASE_URL = 'https://api2.lowfuelmotorsport.com/api/'
-#  https://api2.lowfuelmotorsport.com/api/users/getUsersPastRaces/8507?start=0&limit=1
 
 class Driver:
     id: int
@@ -111,6 +109,7 @@ class Driver:
         Force a refresh of all sessions
         """
         self.sessions = []
+        self.races = 0
         self.wins = 0
         self.dns = 0
         self.dnf = 0
@@ -154,7 +153,13 @@ class Driver:
         basic info about the session
         """
 
-        at_a_time = 200
+        # New driver?  Grab a bunch at a time.
+        # Established driver?  Grab a few to avoid detection
+
+        if self.races == 0:
+            at_a_time = 200
+        else:
+            at_a_time = 5
 
         if self.name != '':
             print(f'Updating sessions for {self.name}...')
@@ -193,7 +198,7 @@ class Driver:
                 if breakout:
                     break
 
-            time.sleep(.5)
+            time.sleep(.25)
             
 
         added_session_counter = 0

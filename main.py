@@ -1,8 +1,6 @@
 import json
 import pickle
-from re import T
 import colorama
-import collections
 
 
 from itertools import tee

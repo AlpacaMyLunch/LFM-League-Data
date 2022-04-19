@@ -165,6 +165,7 @@ class Race:
     def print(self):
         print(f"{self.track} | {self.date}")
         print(f'{self.car_year} {self.car_name} ({self.car_class})')
+        print(self.url)
         if self.dns:
             print(colored('DID NOT START', 'red'))
             return
@@ -174,7 +175,7 @@ class Race:
                 return
         print(f'{self.start_position} -> to -> {self.finish_position}')
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
-        print(self.url)
+        
         print(f'Gap to P1: {self.gap}')
         print(f'Split {self.split}')
         
