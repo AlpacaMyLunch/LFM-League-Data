@@ -557,7 +557,26 @@ def main():
                     if second_arg == 'opponents':
                         race = self.selected_driver.return_session(session_id)
                         if race:
-                            race.show_opponents()
+                            # race.show_opponents()
+                            opponents = race.opponents
+                            msgs = []
+                            for opponent in opponents:
+                                name = opponent['name']
+                                id = opponent['id']
+                                if id_in_drivers(id, drivers):
+                                    name = colored(name, 'blue')
+
+                                p = f'P{opponent["finish"]}'
+
+                                if opponent['dns']:
+                                    p = colored('DNS', 'red')
+                                elif opponent['dnf']:
+                                    p = colored('DNF', 'red')
+
+                                msg = f'{name} ({id})\n{p} ({opponent["fastest"]}) in a {opponent["car"]}\n'
+                                msgs.append(msg)
+
+                            print_side_by_side(msgs, 4, 65)
 
                     if second_arg == 'compare':
                         opponent_id = int(args[2])

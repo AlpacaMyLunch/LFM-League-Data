@@ -233,6 +233,7 @@ class Race:
 
 
 
+
     def show_opponents(self):
         messages = []
         for opponent in self.opponents:
@@ -291,7 +292,9 @@ def extract_opponent_list(data: dict, split: int):
                                 'id': driver_id,
                                 'finish': result['position'],
                                 'fastest': result['bestlap'],
-                                'car': f"{result['year']} {result['car_name']}"
+                                'car': f"{result['year']} {result['car_name']}",
+                                'dns': bool(result['dns']),
+                                'dnf': bool(result['dnf'])
                                 }
                         )
     
