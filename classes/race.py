@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-from classes.printing import print_side_by_side, replace_print
+from classes.printing import COLOR_CYAN, print_side_by_side, replace_print
 
 from classes.sector import Sector
 from classes.lap import Lap
@@ -131,6 +131,7 @@ class Race:
             'best_lap': self.best_lap,
             'total_time': self.total_time,
             'dnf': self.dnf,
+            'dns': self.dns,
             'gap': self.gap,
             'chat': self.chat,
             'laps': [],
@@ -173,7 +174,16 @@ class Race:
             print(colored('DID NOT FINISH', 'red'))
             if len(self.laps) < 1:
                 return
-        print(f'{self.start_position} -> to -> {self.finish_position}')
+
+        finish = self.finish_position
+        if finish < self.start_position:
+            finish = colored(f'P{finish}', 'green')
+        elif finish > self.start_position:
+            finish = colored(f'P{finish}', 'red')
+        else:
+            finish = f'P{finish}'
+        print(f'P{self.start_position} -> to -> {finish}')
+
         print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
         
         print(f'Gap to P1: {self.gap}')
@@ -395,10 +405,12 @@ def extract_laps(data: dict, driver_id: int):
                         analysis['hypothetical'] = hypothetical_lap
 
                         analysis['consistency'] = {}
+
                         for key in sector_analysis:
                             minmax = min_max(sector_analysis[key])
                             analysis['consistency'][key] = abs(compare_times(minmax['min'], minmax['max']))
                             sector_analysis[key] = average_time(sector_analysis[key])
+
 
                         average_lap = Lap(-2)
                         for sector_number in range(1, 4):
@@ -490,8 +502,7 @@ def pretty_time(time_value, best_value, valid_lap=True):
 
     Best = Purple
     Within .250 = Green
-    .251 - .5 = Yellow
-    .501 - .75 = Yellow
+    .251 - .75 = Yellow
     .751 - 1 = Redorange
     >1 = red
     """
@@ -503,19 +514,18 @@ def pretty_time(time_value, best_value, valid_lap=True):
 
     if comparison > 1:
         return COLOR_RED
-    elif comparison > .75:
-        return COLOR_WHITE
+
     elif comparison > .5:
-        return COLOR_WHITE
-    elif comparison > .25:
+
         return COLOR_YELLOW
+
     elif comparison > 0:
         return COLOR_GREEN
+
     else:
        return COLOR_PURPLE
 
 def gather_data(session_id: int):
-    # print(f'gathering session {session_id}', end='\r')
     replace_print(f'gathering session {session_id}  ')
     cache = load_cache(session_id)
     if cache:
