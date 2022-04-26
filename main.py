@@ -614,7 +614,7 @@ def main():
 
                 
                 output.append(
-                    f"{driver['races']} races with {driver['name']} ({driver['id']})"
+                    f"{driver['count']} races with {driver['name']} ({driver['id']})"
                 )
 
             

@@ -31,6 +31,9 @@ class Driver:
     tracks: dict
     elo: int
     safety_rating: float
+    countable_laps: int
+    valid_laps: int
+    invalid_laps: int
 
     # Do our sessions go back to the very first race?
     # (Sessions might be cut short if script crashed during an update.)
@@ -54,6 +57,9 @@ class Driver:
         self.safety_rating = 0.0
         self.tracks = {}
         self.complete = False
+        self.countable_laps = 0
+        self.valid_laps = 0
+        self.invalid_laps = 0
 
         
         self.save_file = f'{PICKLE_DIR}{self.id}.pkl'
@@ -76,15 +82,19 @@ class Driver:
             self.dns = exists.dns
             self.dnf = exists.dnf
             self.tracks = exists.tracks
-
+            self.elo = exists.elo
+            self.safety_rating = exists.safety_rating
+            self.complete = exists.complete
+            
+            
             try:
-                self.elo = exists.elo
-                self.safety_rating = exists.safety_rating
-                self.complete = exists.complete
+                self.countable_laps = exists.countable_laps
+                self.valid_laps = exists.valid_laps
+                self.invalid_laps = exists.invalid_laps
             except:
-                self.elo = 0
-                self.safety_rating = 0.0
-                self.complete = False
+                self.countable_laps = 0
+                self.valid_laps = 0
+                self.invalid_laps = 0
 
         else:
             pickle_save(self.save_file, self)
@@ -122,13 +132,8 @@ class Driver:
 
     def print(self):
         print()
-        print(f'{self.name} ({self.elo} elo, {self.safety_rating} sr)')
-        print(self.url)
-        print(f'{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF')
-        print(f'{self.wins} wins, {self.podiums} podiums')
-        print(f'{self.incident_points_per_race} incidents per race')
-        print(f'Notes: {self.notes}')
-
+        
+        print_side_by_side([self.text(colorful=True)], 1, 60)
         print()
 
     def text(self, colorful=False):
@@ -142,6 +147,7 @@ class Driver:
 
         output = f'{output}{self.url}\n' 
         output = f'{output}{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF\n'
+        output = f'{output}{self.countable_laps:,} laps driven.  {self.valid_laps:,} ({percentage(self.valid_laps, self.countable_laps)}) valid, {self.invalid_laps:,} ({percentage(self.invalid_laps, self.countable_laps)}) invalid.\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}{self.incident_points_per_race} incidents per race\n'
         output = f'{output}Notes: {textwrap.fill(self.notes, 50)}\n'
@@ -249,8 +255,20 @@ class Driver:
                                 'races': 0,
                                 'best': '10:59.999',
                                 'average_laps': [],
-                                'average': None
+                                'average': None,
+                                'valid_laps': 0,
+                                'invalid_laps': 0,
+                                'countable_laps': 0 # We don't count Lap 1, and if (mandatory pitstop = true AND invalid laps > 1, we subtract 2)
                             }
+
+                        self.tracks[track][car]['countable_laps'] += new_race.countable_laps
+                        self.tracks[track][car]['valid_laps'] += new_race.valid_laps
+                        self.tracks[track][car]['invalid_laps'] += new_race.invalid_laps
+
+                        self.countable_laps += new_race.countable_laps
+                        self.valid_laps += new_race.valid_laps
+                        self.invalid_laps += new_race.invalid_laps
+
 
                         self.tracks[track][car]['races'] += 1
                         compared = compare_times(self.tracks[track][car]['best'], new_race.best_lap)
@@ -294,6 +312,7 @@ class Driver:
 
         counter = {}
         holder = []
+        
         for session in self.sessions:
             opponents = session.opponents
             for opponent in opponents:
@@ -317,12 +336,11 @@ class Driver:
         for id in list(counter.keys())[0:number_of_opponents]:
             for opponent in holder:
                 if opponent['id'] == id:
-                    opponent['races'] = counter[id]
-                    # output.append(f'{counter[id]} races with {opponent["name"]} ({opponent["id"]})')
+
                     output.append({
                         'name': opponent['name'],
                         'id': opponent['id'],
-                        'races': counter[id]
+                        'count': counter[id]
                     })
                     break
 
@@ -375,13 +393,13 @@ class Driver:
 
         return None
 
-    def return_sessions_by_term(self, term: str):
+    def return_sessions_by_term(self, search_terms: str):
         """
         Return a list of sessions based on a term
-        such as track or car name.
+        Track or car name.
         """
 
-        terms = term.split(' ')
+        terms = search_terms.split(' ')
         output = []
         for session in self.sessions:
             include = True
@@ -389,6 +407,10 @@ class Driver:
                 for term in terms:
                     if (term.lower() not in session.track.lower()) and (term.lower() not in session.car_name.lower()):
                         include = False
+                # if include == False:
+                #     # Didn't match on car or track.  Maybe match on opponent
+                #     if opponent_exists(search_terms.lower(), session.opponents):
+                #         include = True
             else:
                 include = False
 
@@ -403,6 +425,16 @@ class Driver:
 
 
 # UTILITY FUNCTIONS
+
+def opponent_exists(opponent_name, opponent_list):
+    """
+    Does a name exist in the list of opponents?
+    """
+    for opponent in opponent_list:
+        if opponent_name.lower() in opponent['name'].lower():
+            return True
+
+    return False
 
 def json_from_file(file_name):
     with open(file_name) as json_file:

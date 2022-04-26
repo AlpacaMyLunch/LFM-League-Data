@@ -56,6 +56,11 @@ class Race:
     event_id: int
     driver_elo: int
     driver_safety_rating: float
+    valid_laps: int
+    valid_lap_percentage: float
+    invalid_laps: int
+    invalid_lap_percentage: float
+    countable_laps: int
 
     def __init__(self, session_id: int, driver_id: int):
 
@@ -104,6 +109,46 @@ class Race:
         self.driver_elo = extracted['elo']
         self.driver_safety_rating = extracted['safety_rating']
         
+        self.invalid_laps = 0
+        self.valid_laps = 0
+        for lap in self.laps:
+            # Don't count the first lap.  Sometimes the game says it's invalid for no reason.... also says the lap takes ____ minutes.
+            if lap.number != 1:
+                if not lap.valid:
+                    self.invalid_laps += 1
+                else:
+                    self.valid_laps += 1
+                    
+
+        if self.mandatory_pitstops:
+            if self.invalid_laps > 1:
+                self.invalid_laps -= 2
+                # Pitstop will invalidate two laps
+
+
+        self.countable_laps = 0
+        self.invalid_lap_percentage = 0
+        self.valid_lap_percentage = 0
+        if not self.dns:
+            if len(self.laps) > 0:
+                
+                # we are not going to count the first lap
+                self.countable_laps = len(self.laps) - 1
+
+                if self.mandatory_pitstops:
+                    if self.invalid_laps > 1:
+                        # Best way to tell if they had a pitstop.
+                        # It was mandatory AND they have at least 2 invalid laps
+                        self.countable_laps -= 2
+
+                if self.invalid_laps > 0:
+                    self.invalid_lap_percentage = percentage(self.invalid_laps, self.countable_laps)
+
+                if self.valid_laps > 0:
+                    self.valid_lap_percentage = percentage(self.valid_laps, self.countable_laps)
+
+        
+        
 
 
         
@@ -137,7 +182,13 @@ class Race:
             'laps': [],
             'url': self.url,
             'driver_elo': self.driver_elo,
-            'driver_safety_rating': self.driver_safety_rating
+            'driver_safety_rating': self.driver_safety_rating,
+            'opponents': self.opponents,
+            'invalid_laps': self.invalid_laps,
+            'invalid_lap_percentage': self.invalid_lap_percentage,
+            'valid_laps': self.valid_laps,
+            'valid_lap_percentage': self.valid_lap_percentage,
+            'countable_laps': self.countable_laps
         }
 
         if 'hypothetical' in self.analysis:
@@ -184,7 +235,7 @@ class Race:
             finish = f'P{finish}'
         print(f'P{self.start_position} -> to -> {finish}')
 
-        print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.')
+        print(f'{self.incidents} incidents.  {self.mandatory_pitstops} mandatory pitstops.  {self.invalid_lap_percentage}% invalid laps')
         
         print(f'Gap to P1: {self.gap}')
         print(f'Split {self.split}')
@@ -493,7 +544,8 @@ def average_time(time_list: list):
 
     return f'{m}:{s}'
         
-
+def percentage(part, whole):
+    return (round(100 * float(part)/float(whole), 1))
 
 def pretty_time(time_value, best_value, valid_lap=True):
     """
