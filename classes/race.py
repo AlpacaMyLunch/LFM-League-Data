@@ -243,43 +243,27 @@ class Race:
         
 
         
-        at_a_time = 8
-        line_len = 30
+        output = []
+        for lap in self.laps:
 
-        
-        for i in range(0, len(self.laps), at_a_time):
-            laps = self.laps[i:i+at_a_time]
-            
-            msgs = []
-            for lap in laps:
-                new_entry =  f'Lap {lap.number}'
-                if not lap.valid:
-                    new_entry = f'{new_entry} (x)'
-                msgs.append(new_entry)
-            print_side_by_side(msgs, at_a_time, line_len)
-
+            if lap.valid:
+                temp = f'Lap {lap.number}\n'
+            else:
+                temp = f'Lap {lap.number} (x)\n'
 
             for sector_number in range(1, 4):
                 sector_header = f'Sector {sector_number}'
-                sector_line = '   '
-                for lap in laps:
-                    sector = lap.return_sector(sector_number)
-                    new_entry = f'{sector_header}: {sector.time}'
-                    temp_len = len(new_entry)
-                    new_entry = f'{sector_header}: {colored(sector.time, pretty_time(sector.time, self.best[f"{sector_header}"], lap.valid))}'
-                    sector_line = f'{sector_line}{new_entry}{" " * (line_len - temp_len)}'
-                print(sector_line)
+                sector = lap.return_sector(sector_number)
+                temp = f'{temp}{sector_header}: {colored(sector.time, pretty_time(sector.time, self.best[f"{sector_header}"], lap.valid))}\n'
+            
+            temp = f'{temp}Total: {colored(lap.time, pretty_time(lap.time, self.best["total"], lap.valid))}\n' 
 
-            total_line = '   '
-            for lap in laps:
-                new_entry = f'Total: {lap.time}'
-                temp_len = len(new_entry)
-                # now add color
-                new_entry = f'Total: {colored(lap.time, pretty_time(lap.time, self.best["total"], lap.valid))}'
-                total_line = f'{total_line}{new_entry}{" " * (line_len - temp_len)}'
+            output.append(temp)
 
-            print(total_line)
-            print('')
+        print_side_by_side(output, line_len=25, dynamic_at_a_time=True)
+
+
+
 
         print('')
         hypothetical = 'Hypothetical\n' + self.analysis['hypothetical'].text()

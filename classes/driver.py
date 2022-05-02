@@ -82,10 +82,12 @@ class Driver:
             self.dns = exists.dns
             self.dnf = exists.dnf
             self.tracks = exists.tracks
-            self.elo = exists.elo
+            
             self.safety_rating = exists.safety_rating
             self.complete = exists.complete
             
+            if type(exists.elo) == int:
+                self.elo = exists.elo
             
             try:
                 self.countable_laps = exists.countable_laps
@@ -286,7 +288,10 @@ class Driver:
 
         # Grab ELO and safety from most recent session (first in list)
         most_recent = self.sessions[0]
-        self.elo = most_recent.driver_elo
+        if type(most_recent) == int:
+            self.elo = most_recent.driver_elo
+        else:
+            self.elo = 0
         self.safety_rating = most_recent.driver_safety_rating
 
 
