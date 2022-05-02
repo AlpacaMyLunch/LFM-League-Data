@@ -3,6 +3,7 @@ import re
 import sys
 import textwrap
 from termcolor import colored as col
+from os import get_terminal_size
 
 colorama.init()
 
@@ -40,7 +41,7 @@ def replace_print(msg: str):
 
 
 
-def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height=False, organize_lengths=False):
+def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_margin: int=3, dynamic_height: bool=False, organize_lengths: bool=False, dynamic_at_a_time: bool=False):
 
     most_lines = 0
 
@@ -79,6 +80,13 @@ def print_side_by_side(msgs: list, at_a_time: int=2, line_len: int=30, left_marg
             msgs.append(msg.split('\n'))
 
     # end organize
+
+
+    if dynamic_at_a_time:
+        terminal_columns = get_terminal_size()[0] - left_margin
+        new_at_a_time = int(round(terminal_columns / (line_len + (line_len * .25)), 0))
+        print(f'{terminal_columns} / ({line_len} + ({line_len} * .25)) = {new_at_a_time}')
+        at_a_time = new_at_a_time
 
 
     for i in range(0, len(msgs), at_a_time):

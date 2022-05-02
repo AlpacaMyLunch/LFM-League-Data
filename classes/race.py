@@ -316,6 +316,7 @@ class Race:
         opponent_laps = extract_laps(race_data, opponent_id)
 
 
+        print('')
         print(f"    COMPARISON vs {opponent['name']}")
         print('')
 
@@ -327,6 +328,7 @@ class Race:
         print('')
         print('    Average Lap Breakdown')
         self.analysis['average'].compare_to(opponent_laps['analysis']['average'])
+
 
 
 

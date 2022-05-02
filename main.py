@@ -151,7 +151,7 @@ def main():
                 # driver.print()
                 driver_outputs.append(driver.text(colorful=True))
 
-            print_side_by_side(driver_outputs, 4, 75, dynamic_height=True)
+            print_side_by_side(driver_outputs, 4, 75, dynamic_height=True, dynamic_at_a_time=True)
 
         def do_delete(self, args):
             """
