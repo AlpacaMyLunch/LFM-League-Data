@@ -297,7 +297,7 @@ class Race:
         race_data = gather_data(self.session_id)
 
         opponent = return_opponent(self.opponents, opponent_id)
-        opponent_laps = extract_laps(race_data, opponent_id)
+        opponent_lap_data = extract_laps(race_data, opponent_id)
 
 
         print('')
@@ -311,7 +311,99 @@ class Race:
 
         print('')
         print('    Average Lap Breakdown')
-        self.analysis['average'].compare_to(opponent_laps['analysis']['average'])
+        self.analysis['average'].compare_to(opponent_lap_data['analysis']['average'])
+
+        print('\n\n   COMPARE V2 \n\n')
+
+        
+        # Drivers might have a different number of laps
+        # Let's find the highest number
+
+        opponent_laps = opponent_lap_data['laps']
+        max_laps = len(self.laps)
+        if len(opponent_laps) > max_laps:
+            max_laps = len(opponent_laps)
+
+        output = []
+        separator = '   '
+
+        for lap_index in range(0, max_laps):
+            if lap_index < len(self.laps):
+                driver_lap = self.laps[lap_index]
+            else:
+                driver_lap = None
+
+            if lap_index < len(opponent_laps):
+                opponent_lap = opponent_laps[lap_index]
+            else:
+                opponent_lap = None
+
+            temp = f'Lap {1 + lap_index}:\n'
+            for sector_number in range(1, 4):
+                sector_header = f'Sector {sector_number}'
+                
+
+
+                driver_sector_color = "green"
+                opponent_sector_color = "white"
+                                
+                if driver_lap == None:
+                    driver_sector_time = 'N/A'
+                    driver_sector_color = "white"
+                    opponent_sector_color = "green"
+                else:
+                    driver_sector_time = driver_lap.return_sector(sector_number).time
+
+                if opponent_lap == None:
+                    opponent_sector_time = 'N/A'
+                    opponent_sector_color = "white"
+                else:
+                    opponent_sector_time = opponent_lap.return_sector(sector_number).time
+                    if driver_sector_time != "N\A":
+                        if compare_times(driver_sector_time, opponent_sector_time) < 0:
+                            driver_sector_color = "white"
+                            opponent_sector_color = "green"
+
+                temp = f'{temp}{sector_header}: {colored(driver_sector_time, driver_sector_color)}{separator}{colored(opponent_sector_time, opponent_sector_color)}\n'
+
+                            
+            
+            total_header = f'Total'
+            
+            if driver_lap == None:
+                driver_lap_time = "N\A"
+                driver_lap_color = "white"
+                opponent_lap_color = "green"
+            else:
+                driver_lap_time = driver_lap.time
+                driver_lap_color = "green"
+                opponent_lap_color = "white"
+
+            if opponent_lap == None:
+                opponent_lap_time = "N\A"
+                opponent_lap_color = "white"
+            else:
+                opponent_lap_time = opponent_lap.time
+                if driver_lap_time != 'N\A':
+                    if compare_times(driver_lap_time, opponent_lap_time) < 0:
+                        driver_lap_color = "white"
+                        opponent_lap_color = "green"
+
+
+            if driver_lap:
+                if driver_lap.valid == False:
+                    driver_lap_color = 'red'
+            if opponent_lap:
+                if opponent_lap.valid == False:
+                    opponent_lap_color = 'red'
+
+            temp = f'{temp}{total_header}: {colored(driver_lap_time, driver_lap_color)}{separator}{colored(opponent_lap_time, opponent_lap_color)}\n'
+            output.append(temp)
+
+        print_side_by_side(output, line_len=40, dynamic_at_a_time=True)
+
+
+
 
 
 

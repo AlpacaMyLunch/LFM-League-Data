@@ -12,7 +12,7 @@ from datetime import datetime
 
 from classes.driver import Driver
 from classes.printing import COLOR_GREEN, print_side_by_side, clear_terminal
-from classes.race import compare_times, http_request
+from classes.race import compare_times, http_request, min_max
 
 PICKLE_DIR = './pickles/'
 
@@ -151,7 +151,7 @@ def main():
                 # driver.print()
                 driver_outputs.append(driver.text(colorful=True))
 
-            print_side_by_side(driver_outputs, 4, 75, dynamic_height=True, dynamic_at_a_time=True)
+            print_side_by_side(driver_outputs, line_len=65, dynamic_height=True, dynamic_at_a_time=True)
 
         def do_delete(self, args):
             """
@@ -199,7 +199,7 @@ def main():
                     if identifier.lower() in driver.name.lower() or identifier.lower() in driver.notes.lower():
                         output.append(driver.text(colorful=True))
 
-            print_side_by_side(output, 3, 95)
+            print_side_by_side(output, line_len=65, dynamic_height=True)
 
 
         def do_select(self, identifier):
@@ -321,7 +321,7 @@ def main():
                 msg = f'{msg} \n'
                 output.append(msg)
 
-            print_side_by_side(output, 2, 140, dynamic_height=True, organize_lengths=True)
+            print_side_by_side(output, line_len=110, dynamic_height=True, organize_lengths=True, dynamic_at_a_time=True)
 
         def do_chats(self, args):
             """
@@ -372,9 +372,7 @@ def main():
                         cars[car] = 0
                     cars[car] += 1
 
-            cars = {k: v for k, v in sorted(cars.items(), key=lambda item: item[1], reverse=True)}
-            for car in cars:
-                print(car, cars[car])
+            
 
         def do_tracks(self, args):
             """
@@ -420,9 +418,10 @@ def main():
                             if compared < 0:
                                 best_lap = track_data[car]['best']
 
-                            compared = compare_times(best_average, track_data[car]['average'])
+                            best_average_for_this_car = min_max(track_data[car]['average_laps'])['min']
+                            compared = compare_times(best_average, best_average_for_this_car)
                             if compared < 0:
-                                best_average = track_data[car]['average']
+                                best_average = best_average_for_this_car
 
                     for car in track_data:
                         include = True
@@ -434,16 +433,16 @@ def main():
                         if include:
                             include_track = True
                             car_best = track_data[car]['best']
-                            car_average = track_data[car]['average']
+                            best_average_for_this_car = min_max(track_data[car]['average_laps'])['min']
                             car_races = track_data[car]['races']
                             temp_output = f"{temp_output}   {colored(car, 'blue')}\n"
 
                             if car_best == best_lap:
                                 car_best = colored(car_best, 'magenta')
-                            if car_average == best_average:
-                                car_average = colored(car_average, 'magenta')
+                            if best_average_for_this_car == best_average:
+                                best_average_for_this_car = colored(best_average_for_this_car, 'magenta')
 
-                            temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Average: {car_average}\n\n"
+                            temp_output = f"{temp_output}   Races: {car_races}, Best: {car_best}, Best Average: {best_average_for_this_car}\n\n"
 
                     if include_track:
                         output.append(temp_output)
@@ -468,9 +467,10 @@ def main():
 
                         for car in track_data:
                             if track_data[car]['average']:
-                                compared = compare_times(best_average, track_data[car]['average'])
+                                best_average_for_this_car = min_max(track_data[car]['average_laps'])['min']
+                                compared = compare_times(best_average, best_average_for_this_car)
                                 if compared < 0:
-                                    best_average = track_data[car]['average']
+                                    best_average = best_average_for_this_car
                         
                         
                         data[track_name]['Drivers'][driver.name]['avg'] = best_average
@@ -517,7 +517,7 @@ def main():
                 
 
 
-            print_side_by_side(output, 4, 70, dynamic_height=True, organize_lengths=True)
+            print_side_by_side(output, line_len=70, dynamic_height=True, organize_lengths=True)
 
 
 
@@ -584,12 +584,14 @@ def main():
                         if race:
                             race.compare(opponent_id)
 
+
+
         def do_common(self, args):
             if not self.selected_driver:
                 print('Please select a driver')
                 return
 
-            number_of_opponents = 6 # default
+            number_of_opponents = 25 # default
             name_filters = []
             name_filter = ''
             args = args.split(' ')
@@ -618,7 +620,7 @@ def main():
                 )
 
             
-            print_side_by_side(output, 5, 60)
+            print_side_by_side(output, line_len=50)
             
                 
 
@@ -673,7 +675,7 @@ def main():
 
 
 
-            print_side_by_side(printing, 3, 90)
+            print_side_by_side(printing, line_len=75)
 
 
 

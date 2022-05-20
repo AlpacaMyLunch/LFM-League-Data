@@ -130,6 +130,11 @@ class Driver:
         self.incident_points_per_race = 0.0
         self.tracks = {}
         self.complete = False
+        self.countable_laps = 0
+        self.valid_laps = 0
+        self.invalid_laps = 0
+        self.elo = 0
+        self.safety_rating = 0
         self.gather_sessions()
 
     def print(self):
@@ -149,7 +154,7 @@ class Driver:
 
         output = f'{output}{self.url}\n' 
         output = f'{output}{self.races} sessions {self.dns} ({percentage(self.dns, self.races)}) DNS, {self.dnf} ({percentage(self.dnf, self.races)}) DNF\n'
-        output = f'{output}{self.countable_laps:,} laps driven.  {self.valid_laps:,} ({percentage(self.valid_laps, self.countable_laps)}) valid, {self.invalid_laps:,} ({percentage(self.invalid_laps, self.countable_laps)}) invalid.\n'
+        output = f'{output}{self.valid_laps:,} ({percentage(self.valid_laps, self.countable_laps)}) valid, {self.invalid_laps:,} ({percentage(self.invalid_laps, self.countable_laps)}) invalid laps.\n'
         output = f'{output}{self.wins} wins, {self.podiums} podiums\n'
         output = f'{output}{self.incident_points_per_race} incidents per race\n'
         output = f'{output}Notes: {textwrap.fill(self.notes, 50)}\n'
@@ -288,7 +293,7 @@ class Driver:
 
         # Grab ELO and safety from most recent session (first in list)
         most_recent = self.sessions[0]
-        if type(most_recent) == int:
+        if type(most_recent.driver_elo) == int:
             self.elo = most_recent.driver_elo
         else:
             self.elo = 0
@@ -426,7 +431,6 @@ class Driver:
 
         
         return output
-
 
 
 # UTILITY FUNCTIONS
